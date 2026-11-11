@@ -4,169 +4,99 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>First Meeting MIDI Studio</title>
+<title>EXPERIMENT MIDI Studio</title>
 <style>
-*{box-sizing:border-box}
-body{
- background:#10111a;color:#eee;font-family:Arial;
- margin:0;padding:18px;max-width:760px;margin:auto
-}
+body{background:#10111a;color:#eee;font-family:Arial;padding:18px;max-width:720px;margin:auto}
 h1{color:#bd9aff}
-h2{color:#d6c5ff;margin-top:28px}
-.card{
- background:#202230;border:1px solid #39394b;
- border-radius:12px;padding:15px;margin:12px 0
-}
+.card{background:#202230;border:1px solid #39394b;border-radius:12px;padding:15px;margin:12px 0}
 .delta{border-left:4px solid #ad78ff}
 .hack{border-left:4px solid #50bce8}
-button{
- background:#8057c9;color:white;border:0;
- border-radius:8px;padding:12px;margin:5px 3px;
- font-size:15px
-}
-button:active{background:#54318f}
+button{background:#8057c9;color:white;border:0;border-radius:8px;padding:12px;margin:5px 3px;font-size:15px}
 small,.muted{color:#aaa}
-.info{line-height:1.6}
 </style>
 </head>
 <body>
-
-<h1>FIRST MEETING</h1>
+<h1>EXPERIMENT</h1>
 <p>Friday Night Funkin': Universe</p>
-<p class="muted">112 BPM | G Major | 4/4 | 48 bars</p>
+<p class="muted">128 BPM | D Minor | 4/4 | 48 тактов</p>
 
-<div class="card">
 <h2>Инструменты</h2>
 <div id="instruments"></div>
-</div>
-
-<div class="card">
-<h2>Вокалы</h2>
+<h2>Вокальные партии</h2>
 <div id="voices"></div>
-</div>
-
-<div class="card info">
-<h2>Настройка голосов</h2>
-
-<p><b>ДЕЛЬТА — Synth Bass 2</b><br>
-GM Program 39 (внутренний номер 38). Низкий басовый тембр.</p>
-
-<p><b>ХАК — Choir Aahs</b><br>
-GM Program 53 (внутренний номер 52). Более высокий хоровой тембр.</p>
-
-<p>В MIDI это синтезированные ноты, а не настоящие записи голосов. В BandLab можно заменить инструменты на другие басовые и хоровые пресеты.</p>
-</div>
 
 <script>
-const BPM=112;
-const TPQ=480;
-const BAR=TPQ*4;
-const TOTAL=48;
+const BPM=128, TPQ=480, BAR=1920, TOTAL=48;
 
 function vlq(v){
  let b=v&127,r=[];
  while(v>>=7){b<<=8;b|=(v&127)|128}
- while(true){
-  r.push(b&255);
-  if(b&128)b>>=8;
-  else break;
- }
+ while(true){r.push(b&255);if(b&128)b>>=8;else break}
  return r;
 }
 
-function makeTrack(name,channel,program,notes){
- let events=[];
+function makeMidi(name,ch,program,notes){
+ const events=[];
  const nb=[...new TextEncoder().encode(name)];
+ events.push({t:0,p:0,d:[255,3,...vlq(nb.length),...nb]});
 
- events.push({
-  t:0,p:0,d:[255,3,...vlq(nb.length),...nb]
+ const tempo=Math.round(60000000/BPM);
+ events.push({t:0,p:1,d:[255,81,3,(tempo>>16)&255,(tempo>>8)&255,tempo&255]});
+ events.push({t:0,p:2,d:[255,88,4,4,2,24,8]});
+
+ if(program!==null)
+  events.push({t:0,p:3,d:[192|ch,program]});
+
+ notes.forEach(n=>{
+  events.push({t:n.s,p:5,d:[144|ch,n.p,n.v]});
+  events.push({t:n.s+n.l,p:4,d:[128|ch,n.p,0]});
  });
 
- if(program!==null){
-  events.push({
-   t:0,p:1,d:[192|channel,program]
-  });
- }
-
- for(const n of notes){
-  events.push({
-   t:n.s,p:3,d:[144|channel,n.p,n.v]
-  });
-  events.push({
-   t:n.s+n.l,p:2,d:[128|channel,n.p,0]
-  });
- }
-
  events.sort((a,b)=>a.t-b.t||a.p-b.p);
-
  let bytes=[],last=0;
+
  for(const e of events){
   bytes.push(...vlq(e.t-last),...e.d);
   last=e.t;
  }
-
  bytes.push(0,255,47,0);
 
- return [
-  77,84,114,107,
-  (bytes.length>>>24)&255,
-  (bytes.length>>>16)&255,
-  (bytes.length>>>8)&255,
-  bytes.length&255,
-  ...bytes
- ];
+ const track=[77,84,114,107,
+  (bytes.length>>>24)&255,(bytes.length>>>16)&255,
+  (bytes.length>>>8)&255,bytes.length&255,...bytes];
+
+ const header=[77,84,104,100,0,0,0,6,0,0,0,1,1,224];
+ return new Uint8Array([...header,...track]);
 }
 
-function makeMidi(item){
- const [filename,name,channel,program,notes]=item;
- const tempo=Math.round(60000000/BPM);
+function N(p,s,l,v=90){return {p,s,l,v}}
 
- const conductor=[
-  77,84,114,107,0,0,0,19,
-  0,255,81,3,
-  (tempo>>>16)&255,
-  (tempo>>>8)&255,
-  tempo&255,
-  0,255,88,4,4,2,24,8,
-  0,255,47,0
- ];
-
- const tracks=[
-  conductor,
-  makeTrack(name,channel,program,notes)
- ];
-
- const header=[
-  77,84,104,100,
-  0,0,0,6,
-  0,1,
-  0,2,
-  1,224
- ];
-
- return new Uint8Array([...header,...tracks.flat()]);
-}
-
-function note(p,s,l,v=90){
- return {p,s,l,v};
-}
-
-// PIANO
+// PIANO: напряжённые короткие мотивы
 function piano(){
- let a=[],mel=[67,71,74,71,69,71,74,79];
- for(let b=0;b<TOTAL;b++)
-  mel.forEach((p,i)=>a.push(note(p,b*BAR+i*240,190,75)));
+ let a=[];
+ const patterns=[
+  [62,65,69,72,69,65,62,60],
+  [62,67,70,74,70,67,65,62],
+  [57,60,65,69,65,60,57,60],
+  [58,62,65,70,65,62,60,58]
+ ];
+ for(let b=0;b<TOTAL;b++){
+  patterns[Math.floor(b/4)%4].forEach((p,i)=>{
+   a.push(N(p,b*BAR+i*240,190,75));
+  });
+ }
  return a;
 }
 
 // BASS
 function bass(){
- let a=[],roots=[43,40,45,38];
+ let a=[];
+ const roots=[38,41,34,36];
  for(let b=0;b<TOTAL;b++){
-  let r=roots[b%4];
-  a.push(note(r,b*BAR,600,100));
-  a.push(note(r+7,b*BAR+960,400,85));
-  a.push(note(r+12,b*BAR+1440,400,85));
+  let r=roots[b%4],t=b*BAR;
+  a.push(N(r,t,700,110));
+  a.push(N(r+7,t+960,350,90));
+  a.push(N(r+12,t+1440,350,95));
  }
  return a;
 }
@@ -176,77 +106,101 @@ function drums(){
  let a=[];
  for(let b=0;b<TOTAL;b++){
   for(let beat=0;beat<4;beat++){
-   let t=b*BAR+beat*TPQ;
-   a.push(note(beat%2===0?36:38,t,100,100));
-   a.push(note(42,t+240,80,65));
+   let t=b*BAR+beat*480;
+   a.push(N(beat%2===0?36:38,t,100,105));
+   a.push(N(42,t+240,90,70));
+  }
+  if(b%4===3){
+   a.push(N(45,b*BAR+1680,120,85));
   }
  }
  return a;
 }
 
-// SYNTH
+// SYNTH: холодный лабораторный звук
 function synth(){
  let a=[];
- for(let b=0;b<TOTAL;b++)
-  [55,59,62,59].forEach((p,i)=>a.push(note(p,b*BAR+i*TPQ,400,60)));
+ const chords=[
+  [50,57,62,65],
+  [53,60,65,69],
+  [46,53,58,62],
+  [48,55,60,63]
+ ];
+ for(let b=0;b<TOTAL;b++){
+  chords[Math.floor(b/4)%4].forEach(p=>{
+   a.push(N(p,b*BAR,BAR*2,55));
+  });
+ }
  return a;
 }
 
-// GLOCKENSPIEL
+// GLOCKENSPIEL: редкие высокие ноты
 function glock(){
  let a=[];
- for(let b=0;b<TOTAL;b+=2)
-  [79,83,86,83].forEach((p,i)=>a.push(note(p,b*BAR+i*TPQ,300,70)));
+ const seq=[86,89,93,89,84,88,91,88];
+ for(let b=0;b<TOTAL;b+=2){
+  seq.forEach((p,i)=>{
+   a.push(N(p,b*BAR+i*240,180,65));
+  });
+ }
  return a;
 }
 
-// DELTA: низкая вокальная партия
+// DELTA: низкий басовый вокал
 function delta(){
  let a=[];
  const phrases=[
-  [55,57,59,62],[59,57,55,52],
-  [55,59,62,64],[62,59,57,55],
-  [52,55,57,59],[62,59,55,57],
-  [55,57,62,59],[55,52,55,55]
+  [50,53,57,60],
+  [57,55,53,50],
+  [50,57,60,62],
+  [60,57,55,53],
+  [46,50,53,57],
+  [57,53,50,48],
+  [50,53,57,60],
+  [57,55,53,50]
  ];
 
  for(let section=0;section<12;section++){
-  let ph=phrases[section%phrases.length];
-  let base=section*4;
+  const ph=phrases[section%phrases.length];
+  const base=section*4;
 
-  // Дельта поёт в первом и третьем тактах
-  for(let [offset,index] of [[0,0],[2,2]]){
-   let start=(base+offset)*BAR;
-   a.push(note(ph[index],start,Math.round(BAR*0.88),112));
-   a.push(note(ph[index+1],start+BAR,TPQ*2,100));
+  // Первый и третий такты: Дельта
+  for(const [offset,index] of [[0,0],[2,2]]){
+   const start=(base+offset)*BAR;
+   a.push(N(ph[index],start,BAR*1.5,118));
+   a.push(N(ph[index+1],start+BAR*1.5,BAR*0.45,105));
   }
  }
- a.push(note(55,46*BAR,2*BAR,118));
+ a.push(N(50,46*BAR,2*BAR,120));
  return a;
 }
 
-// HACK: ответная вокальная партия
+// HACK: более высокий ответный вокал
 function hack(){
  let a=[];
  const phrases=[
-  [67,69,71,74],[71,69,67,64],
-  [67,71,74,76],[74,71,69,67],
-  [64,67,69,71],[74,71,67,69],
-  [67,69,74,71],[67,64,67,67]
+  [62,65,69,72],
+  [69,67,65,62],
+  [62,69,72,74],
+  [72,69,67,65],
+  [58,62,65,69],
+  [69,65,62,60],
+  [62,65,69,72],
+  [69,67,65,62]
  ];
 
  for(let section=0;section<12;section++){
-  let ph=phrases[section%phrases.length];
-  let base=section*4;
+  const ph=phrases[section%phrases.length];
+  const base=section*4;
 
   // Хак отвечает во втором и четвёртом тактах
-  for(let [offset,index] of [[1,0],[3,2]]){
-   let start=(base+offset)*BAR;
-   a.push(note(ph[index],start,Math.round(BAR*0.96),112));
-   a.push(note(ph[index+1],start+BAR,TPQ*2,100));
+  for(const [offset,index] of [[1,0],[3,2]]){
+   const start=(base+offset)*BAR;
+   a.push(N(ph[index],start,BAR*1.65,115));
+   a.push(N(ph[index+1],start+BAR*1.65,BAR*0.3,100));
   }
  }
- a.push(note(67,47*BAR,BAR,118));
+ a.push(N(62,47*BAR,BAR,120));
  return a;
 }
 
@@ -264,8 +218,8 @@ const voices=[
 ];
 
 function download(item){
- const data=makeMidi(item);
- const blob=new Blob([data],{type:"audio/midi"});
+ const bytes=makeMidi(item[1],item[2],item[3],item[4]);
+ const blob=new Blob([bytes],{type:"audio/midi"});
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
  a.href=url;
@@ -274,30 +228,26 @@ function download(item){
  setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 
-function card(item,parent,cls){
- const div=document.createElement("div");
- div.className="card "+cls;
-
+function addCard(item,parent,cls=""){
+ const d=document.createElement("div");
+ d.className="card "+cls;
  const h=document.createElement("h3");
  h.textContent=item[1];
-
  const p=document.createElement("p");
+ p.textContent="Инструмент: "+item[5];
  p.className="muted";
- p.textContent="Звук: "+item[5];
-
- const file=document.createElement("small");
- file.textContent=item[0];
-
+ const f=document.createElement("small");
+ f.textContent=item[0];
  const btn=document.createElement("button");
  btn.textContent="Скачать MIDI";
  btn.onclick=()=>download(item);
-
- div.append(h,p,file,document.createElement("br"),btn);
- parent.appendChild(div);
+ d.append(h,p,f,document.createElement("br"),btn);
+ parent.appendChild(d);
 }
 
-instruments.forEach(x=>card(x,document.getElementById("instruments"),""));
-voices.forEach((x,i)=>card(x,document.getElementById("voices"),i===0?"delta":"hack"));
+instruments.forEach(x=>addCard(x,document.getElementById("instruments")));
+addCard(voices[0],document.getElementById("voices"),"delta");
+addCard(voices[1],document.getElementById("voices"),"hack");
 </script>
 </body>
 </html>
