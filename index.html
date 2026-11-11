@@ -3,279 +3,373 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>First Meeting MIDI Studio</title>
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  padding: 22px;
-  background: #10121c;
-  color: white;
-  font-family: Arial, sans-serif;
+*{box-sizing:border-box}
+body{
+ margin:0;padding:20px;background:#10121c;
+ color:white;font-family:Arial,sans-serif
 }
-.container {
-  max-width: 600px;
-  margin: auto;
+main{max-width:650px;margin:auto}
+h1{color:#ad91ff}
+h2{font-size:20px}
+.panel{
+ background:#202337;padding:16px;
+ border-radius:13px;margin:15px 0
 }
-h1 { color: #a98aff; }
-.subtitle { color: #aaa; }
-.track {
-  background: #202337;
-  padding: 15px;
-  border-radius: 12px;
-  margin: 12px 0;
+button{
+ border:0;border-radius:8px;padding:12px;
+ background:#7958cb;color:white;
+ font-size:15px;cursor:pointer
 }
-button, a {
-  display: block;
-  width: 100%;
-  padding: 13px;
-  margin-top: 10px;
-  border: 0;
-  border-radius: 8px;
-  background: #8060d8;
-  color: white;
-  font-size: 16px;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
+button:active{background:#513b91}
+.track{
+ padding:12px 0;border-bottom:1px solid #41445c
 }
-button:active, a:active { background: #5940a0; }
-#status { color: #b9a5ff; margin-top: 15px; }
+.track button{width:100%;margin-top:8px}
+.keys{
+ display:grid;grid-template-columns:repeat(4,1fr);
+ gap:8px
+}
+.keys button{min-height:65px}
+input{width:100%;margin:10px 0}
+small{color:#aaa}
+a{color:#c9b5ff}
+#status{color:#bda5ff}
 </style>
 </head>
 <body>
-<div class="container">
+<main>
 <h1>FIRST MEETING</h1>
-<p class="subtitle">MIDI Studio • Friday Night Funkin': Universe</p>
+<p>Friday Night Funkin': Universe</p>
 <p>112 BPM | G Major | 4/4 | 48 тактов</p>
 
+<section class="panel">
+<h2>Инструментальные партии</h2>
 <div id="tracks"></div>
+<button onclick="downloadAll()">Скачать все MIDI</button>
+</section>
 
-<button onclick="downloadAll()">Скачать все 5 MIDI</button>
-<p id="status">Готово к созданию партий.</p>
-</div>
+<section class="panel">
+<h2>DELTA VOICE STUDIO</h2>
+<p>Басовый вокал Дельты</p>
+<p><small>Выбери ноту, прослушай её и скачай WAV-семпл.</small></p>
+<div class="keys" id="keys"></div>
+
+<h3>Настройки голоса</h3>
+<label>Высота голоса: <span id="pitchText">0.75</span></label>
+<input id="pitch" type="range" min="0.5" max="1.5"
+step="0.05" value="0.75">
+
+<label>Громкость</label>
+<input id="volume" type="range" min="0.1" max="1"
+step="0.05" value="0.7">
+
+<label>Длительность</label>
+<input id="duration" type="range" min="0.15" max="1"
+step="0.05" value="0.4">
+
+<button onclick="downloadVoice()">Скачать выбранную ноту WAV</button>
+<p id="voiceStatus">Выбрана нота C3</p>
+</section>
+
+<p id="status">Студия готова.</p>
+</main>
 
 <script>
-const BPM = 112;
-const TPQ = 480;
-const BAR = TPQ * 4;
-const BARS = 48;
+// =============================
+// MIDI GENERATOR
+// =============================
 
-const chords = [
-  [55, 59, 62], // G
-  [50, 54, 57], // D
-  [52, 55, 59], // Em
-  [48, 52, 55]  // C
+const BPM=112,TPQ=480,BAR=1920,BARS=48;
+
+const chords=[
+ [55,59,62],
+ [50,54,57],
+ [52,55,59],
+ [48,52,55]
+];
+const roots=[43,38,40,36];
+
+function vlq(v){
+ let b=v&127,arr=[];
+ while(v>>=7){b<<=8;b|=(v&127)|128}
+ while(true){
+  arr.push(b&255);
+  if(b&128)b>>=8;
+  else break;
+ }
+ return arr;
+}
+
+function makeTrack(name,channel,program,fn,drums=false){
+ let events=[];
+ function add(t,p,b){events.push({t,p,b})}
+ const nb=[...new TextEncoder().encode(name)];
+ add(0,0,[255,3,...vlq(nb.length),...nb]);
+
+ const us=Math.round(60000000/BPM);
+ add(0,1,[255,81,3,(us>>16)&255,(us>>8)&255,us&255]);
+
+ if(program!==null&&!drums)
+  add(0,2,[192|channel,program]);
+
+ function note(pitch,vel,start,duration){
+  add(start,3,[144|channel,pitch,vel]);
+  add(start+duration,2,[128|channel,pitch,0]);
+ }
+
+ fn(note);
+ events.sort((a,b)=>a.t-b.t||a.p-b.p);
+
+ let data=[],prev=0;
+ for(const e of events){
+  data.push(...vlq(e.t-prev),...e.b);
+  prev=e.t;
+ }
+ data.push(0,255,47,0);
+
+ return [
+  77,84,114,107,
+  (data.length>>>24)&255,
+  (data.length>>>16)&255,
+  (data.length>>>8)&255,
+  data.length&255,
+  ...data
+ ];
+}
+
+function makeMidi(track){
+ const header=[
+  77,84,104,100,0,0,0,6,
+  0,0,0,1,1,224
+ ];
+ return new Uint8Array([...header,...track]);
+}
+
+function piano(note){
+ const melody=[
+  [74,0],[71,240],[67,480],[71,720],
+  [74,960],[76,1200],[74,1440],[71,1680]
+ ];
+ for(let bar=0;bar<BARS;bar++){
+  let start=bar*BAR;
+  for(const [p,o] of melody)
+   note(p,88,start+o,190);
+  chords[bar%4].forEach(p=>note(p+12,58,start,420));
+ }
+}
+
+function bass(note){
+ for(let bar=0;bar<BARS;bar++){
+  for(let beat=0;beat<4;beat++)
+   note(roots[bar%4],90,bar*BAR+beat*TPQ,400);
+ }
+}
+
+function drums(note){
+ for(let bar=0;bar<BARS;bar++){
+  for(let beat=0;beat<4;beat++){
+   let t=bar*BAR+beat*TPQ;
+   if(beat===0||beat===2)note(36,105,t,100);
+   if(beat===1||beat===3)note(38,95,t,100);
+   note(42,58,t,80);
+   note(42,45,t+240,70);
+  }
+ }
+}
+
+function synth(note){
+ for(let bar=0;bar<BARS;bar++){
+  chords[bar%4].forEach(p=>
+   note(p+12,65,bar*BAR,BAR-40)
+  );
+ }
+}
+
+function glock(note){
+ for(let bar=0;bar<BARS;bar++){
+  let s=bar*BAR,c=chords[bar%4];
+  note(c[0]+24,75,s,300);
+  note(c[1]+24,65,s+960,300);
+  note(c[2]+24,75,s+1440,300);
+ }
+}
+
+const definitions=[
+ {name:"Piano",file:"01_Piano.mid",ch:0,pg:0,fn:piano},
+ {name:"Bass",file:"02_Bass.mid",ch:1,pg:33,fn:bass},
+ {name:"Drums",file:"03_Drums.mid",ch:9,pg:null,fn:drums,drums:true},
+ {name:"Synth",file:"04_Synth.mid",ch:2,pg:89,fn:synth},
+ {name:"Glockenspiel",file:"05_Glockenspiel.mid",ch:3,pg:9,fn:glock}
 ];
 
-const roots = [43, 38, 40, 36];
-
-function vlq(value) {
-  let buffer = value & 127;
-  const bytes = [];
-  while ((value >>= 7)) {
-    buffer <<= 8;
-    buffer |= ((value & 127) | 128);
-  }
-  while (true) {
-    bytes.push(buffer & 255);
-    if (buffer & 128) buffer >>= 8;
-    else break;
-  }
-  return bytes;
+function downloadBlob(blob,name){
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download=name;
+ document.body.appendChild(a);
+ a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
 
-function makeTrack(name, channel, program, notes, isDrums=false) {
-  const events = [];
-
-  function event(tick, priority, bytes) {
-    events.push({tick, priority, bytes});
-  }
-
-  const nameBytes = [...new TextEncoder().encode(name)];
-  event(0, 0, [0xFF, 0x03, ...vlq(nameBytes.length), ...nameBytes]);
-
-  const micros = Math.round(60000000 / BPM);
-  event(0, 1, [
-    0xFF, 0x51, 0x03,
-    (micros >> 16) & 255,
-    (micros >> 8) & 255,
-    micros & 255
-  ]);
-
-  if (!isDrums && program !== null) {
-    event(0, 2, [0xC0 | channel, program]);
-  }
-
-  function note(pitch, velocity, start, duration) {
-    event(start, 3, [0x90 | channel, pitch, velocity]);
-    event(start + duration, 2, [0x80 | channel, pitch, 0]);
-  }
-
-  notes(note);
-
-  events.sort((a,b) =>
-    a.tick - b.tick || a.priority - b.priority
-  );
-
-  let previous = 0;
-  const data = [];
-
-  for (const e of events) {
-    data.push(...vlq(e.tick - previous), ...e.bytes);
-    previous = e.tick;
-  }
-
-  data.push(0, 0xFF, 0x2F, 0);
-
-  return [
-    0x4D,0x54,0x72,0x6B,
-    (data.length >>> 24)&255,
-    (data.length >>> 16)&255,
-    (data.length >>> 8)&255,
-    data.length&255,
-    ...data
-  ];
+function downloadMidi(d){
+ const track=makeTrack(d.name,d.ch,d.pg,d.fn,d.drums);
+ downloadBlob(
+  new Blob([makeMidi(track)],{type:"audio/midi"}),
+  d.file
+ );
+ document.getElementById("status").textContent=
+ "Создан "+d.file;
 }
 
-function makeMidi(track) {
-  const header = [
-    0x4D,0x54,0x68,0x64,
-    0,0,0,6,
-    0,0,
-    0,1,
-    (TPQ >> 8)&255, TPQ&255
-  ];
-  return new Uint8Array([...header, ...track]);
-}
-
-function piano(note) {
-  const melody = [
-    [74,0],[71,240],[67,480],[71,720],
-    [74,960],[76,1200],[74,1440],[71,1680]
-  ];
-
-  for (let bar=0; bar<BARS; bar++) {
-    const start = bar * BAR;
-    const chord = chords[bar % 4];
-
-    for (const [pitch, offset] of melody) {
-      note(pitch, 88, start + offset, 190);
-    }
-
-    chord.forEach((pitch, i) => {
-      note(pitch + 12, 58, start + 0, 420);
-    });
-  }
-}
-
-function bass(note) {
-  for (let bar=0; bar<BARS; bar++) {
-    const start = bar * BAR;
-    const root = roots[bar % 4];
-
-    for (let beat=0; beat<4; beat++) {
-      note(root, 90, start + beat*TPQ, 400);
-    }
-  }
-}
-
-function drums(note) {
-  for (let bar=0; bar<BARS; bar++) {
-    const start = bar * BAR;
-
-    for (let beat=0; beat<4; beat++) {
-      const t = start + beat*TPQ;
-
-      if (beat === 0 || beat === 2)
-        note(36, 105, t, 100);
-
-      if (beat === 1 || beat === 3)
-        note(38, 95, t, 100);
-
-      note(42, 58, t, 80);
-      note(42, 45, t + 240, 70);
-    }
-  }
-}
-
-function synth(note) {
-  for (let bar=0; bar<BARS; bar++) {
-    const start = bar * BAR;
-    const chord = chords[bar % 4];
-
-    chord.forEach(pitch => {
-      note(pitch + 12, 65, start, BAR - 40);
-    });
-  }
-}
-
-function glock(note) {
-  for (let bar=0; bar<BARS; bar++) {
-    const start = bar * BAR;
-    const chord = chords[bar % 4];
-
-    note(chord[0] + 24, 75, start, 300);
-    note(chord[1] + 24, 65, start + 960, 300);
-    note(chord[2] + 24, 75, start + 1440, 300);
-  }
-}
-
-const definitions = [
-  {name:"Piano", file:"01_Piano.mid", channel:0, program:0, fn:piano},
-  {name:"Bass", file:"02_Bass.mid", channel:1, program:33, fn:bass},
-  {name:"Drums", file:"03_Drums.mid", channel:9, program:null, fn:drums, drums:true},
-  {name:"Synth", file:"04_Synth.mid", channel:2, program:89, fn:synth},
-  {name:"Glockenspiel", file:"05_Glockenspiel.mid", channel:3, program:9, fn:glock}
-];
-
-const generated = [];
-
-function generate(def) {
-  const track = makeTrack(
-    def.name, def.channel, def.program, def.fn, def.drums
-  );
-  return makeMidi(track);
-}
-
-function download(def) {
-  try {
-    const bytes = generate(def);
-    const blob = new Blob([bytes], {type:"audio/midi"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = def.file;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
-    document.getElementById("status").textContent =
-      "Создан файл: " + def.file;
-  } catch (error) {
-    document.getElementById("status").textContent =
-      "Ошибка: " + error.message;
-  }
-}
-
-function downloadAll() {
-  definitions.forEach((def, i) => {
-    setTimeout(() => download(def), i * 900);
-  });
-}
-
-const tracks = document.getElementById("tracks");
-
-definitions.forEach(def => {
-  const div = document.createElement("div");
-  div.className = "track";
-  div.innerHTML =
-    "<strong>" + def.name + "</strong>" +
-    "<button>Скачать " + def.file + "</button>";
-  div.querySelector("button").onclick = () => download(def);
-  tracks.appendChild(div);
+const tracks=document.getElementById("tracks");
+definitions.forEach(d=>{
+ const div=document.createElement("div");
+ div.className="track";
+ const title=document.createElement("strong");
+ title.textContent=d.name;
+ const btn=document.createElement("button");
+ btn.textContent="Скачать "+d.file;
+ btn.onclick=()=>downloadMidi(d);
+ div.append(title,btn);
+ tracks.appendChild(div);
 });
+
+function downloadAll(){
+ definitions.forEach((d,i)=>
+  setTimeout(()=>downloadMidi(d),i*1000)
+ );
+}
+
+// =============================
+// DELTA VOICE WAV GENERATOR
+// =============================
+
+const audioNotes=[
+ {name:"C3",freq:130.81},
+ {name:"D3",freq:146.83},
+ {name:"E3",freq:164.81},
+ {name:"F3",freq:174.61},
+ {name:"G3",freq:196.00},
+ {name:"A3",freq:220.00},
+ {name:"B3",freq:246.94},
+ {name:"C4",freq:261.63}
+];
+
+let selected=audioNotes[0];
+let audioContext=null;
+
+const keys=document.getElementById("keys");
+
+audioNotes.forEach(n=>{
+ const btn=document.createElement("button");
+ btn.textContent=n.name;
+ btn.onclick=()=>{
+  selected=n;
+  document.getElementById("voiceStatus").textContent=
+   "Выбрана нота "+n.name;
+  playVoice();
+ };
+ keys.appendChild(btn);
+});
+
+document.getElementById("pitch").oninput=e=>{
+ document.getElementById("pitchText").textContent=e.target.value;
+};
+
+function getSettings(){
+ return {
+  freq:selected.freq*Number(document.getElementById("pitch").value),
+  volume:Number(document.getElementById("volume").value),
+  duration:Number(document.getElementById("duration").value)
+ };
+}
+
+function playVoice(){
+ const s=getSettings();
+ const C=window.AudioContext||window.webkitAudioContext;
+ if(!audioContext)audioContext=new C();
+ if(audioContext.state==="suspended")audioContext.resume();
+
+ const t=audioContext.currentTime;
+ const osc=audioContext.createOscillator();
+ const sub=audioContext.createOscillator();
+ const gain=audioContext.createGain();
+
+ osc.type="sawtooth";
+ osc.frequency.value=s.freq;
+ sub.type="triangle";
+ sub.frequency.value=s.freq/2;
+
+ const mix=audioContext.createGain();
+ mix.gain.value=0.35;
+
+ osc.connect(mix);
+ sub.connect(mix);
+ mix.connect(gain);
+ gain.connect(audioContext.destination);
+
+ gain.gain.setValueAtTime(0,t);
+ gain.gain.linearRampToValueAtTime(s.volume*0.45,t+0.025);
+ gain.gain.exponentialRampToValueAtTime(0.001,t+s.duration);
+
+ osc.start(t);
+ sub.start(t);
+ osc.stop(t+s.duration+0.03);
+ sub.stop(t+s.duration+0.03);
+}
+
+// Синтез WAV без внешних библиотек
+function createWav(){
+ const s=getSettings();
+ const sampleRate=44100;
+ const count=Math.floor(sampleRate*s.duration);
+ const buffer=new ArrayBuffer(44+count*2);
+ const view=new DataView(buffer);
+
+ function str(offset,text){
+  for(let i=0;i<text.length;i++)
+   view.setUint8(offset+i,text.charCodeAt(i));
+ }
+
+ str(0,"RIFF");
+ view.setUint32(4,36+count*2,true);
+ str(8,"WAVE");
+ str(12,"fmt ");
+ view.setUint32(16,16,true);
+ view.setUint16(20,1,true);
+ view.setUint16(22,1,true);
+ view.setUint32(24,sampleRate,true);
+ view.setUint32(28,sampleRate*2,true);
+ view.setUint16(32,2,true);
+ view.setUint16(34,16,true);
+ str(36,"data");
+ view.setUint32(40,count*2,true);
+
+ for(let i=0;i<count;i++){
+  const time=i/sampleRate;
+  const fadeIn=Math.min(1,time/0.025);
+  const fadeOut=Math.min(1,(s.duration-time)/0.07);
+  const envelope=Math.max(0,Math.min(fadeIn,fadeOut));
+  const fundamental=Math.sin(2*Math.PI*s.freq*time);
+  const harmonic=Math.sin(2*Math.PI*s.freq*2*time)*0.28;
+  const low=Math.sin(2*Math.PI*s.freq/2*time)*0.35;
+  const value=(fundamental+harmonic+low)*s.volume*envelope*0.65;
+  view.setInt16(44+i*2,
+   Math.max(-1,Math.min(1,value))*32767,true);
+ }
+
+ return new Blob([buffer],{type:"audio/wav"});
+}
+
+function downloadVoice(){
+ const blob=createWav();
+ downloadBlob(blob,"Delta_"+selected.name+".wav");
+ document.getElementById("voiceStatus").textContent=
+ "Скачан Delta_"+selected.name+".wav";
+}
 </script>
 </body>
 </html>
