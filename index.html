@@ -3,269 +3,301 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>First Meeting MIDI Studio</title>
 <style>
-body {
-  background:#11121a;
-  color:#eee;
-  font-family:Arial,sans-serif;
-  padding:20px;
-  max-width:700px;
-  margin:auto;
+*{box-sizing:border-box}
+body{
+ background:#10111a;color:#eee;font-family:Arial;
+ margin:0;padding:18px;max-width:760px;margin:auto
 }
-h1 {color:#b99aff}
-.track {
-  background:#202230;
-  padding:15px;
-  border-radius:12px;
-  margin:12px 0;
+h1{color:#bd9aff}
+h2{color:#d6c5ff;margin-top:28px}
+.card{
+ background:#202230;border:1px solid #39394b;
+ border-radius:12px;padding:15px;margin:12px 0
 }
-button {
-  background:#8057c9;
-  color:white;
-  border:0;
-  border-radius:8px;
-  padding:12px;
-  margin:5px 3px;
-  font-size:15px;
+.delta{border-left:4px solid #ad78ff}
+.hack{border-left:4px solid #50bce8}
+button{
+ background:#8057c9;color:white;border:0;
+ border-radius:8px;padding:12px;margin:5px 3px;
+ font-size:15px
 }
-button:active {background:#54318f}
-.small {color:#aaa;font-size:13px}
+button:active{background:#54318f}
+small,.muted{color:#aaa}
+.info{line-height:1.6}
 </style>
 </head>
 <body>
 
 <h1>FIRST MEETING</h1>
 <p>Friday Night Funkin': Universe</p>
-<p class="small">112 BPM · G Major · 4/4</p>
+<p class="muted">112 BPM | G Major | 4/4 | 48 bars</p>
 
-<div id="tracks"></div>
+<div class="card">
+<h2>Инструменты</h2>
+<div id="instruments"></div>
+</div>
+
+<div class="card">
+<h2>Вокалы</h2>
+<div id="voices"></div>
+</div>
+
+<div class="card info">
+<h2>Настройка голосов</h2>
+
+<p><b>ДЕЛЬТА — Synth Bass 2</b><br>
+GM Program 39 (внутренний номер 38). Низкий басовый тембр.</p>
+
+<p><b>ХАК — Choir Aahs</b><br>
+GM Program 53 (внутренний номер 52). Более высокий хоровой тембр.</p>
+
+<p>В MIDI это синтезированные ноты, а не настоящие записи голосов. В BandLab можно заменить инструменты на другие басовые и хоровые пресеты.</p>
+</div>
 
 <script>
-const BPM = 112;
-const TPQ = 480;
-const BEAT = TPQ;
-const BAR = BEAT * 4;
+const BPM=112;
+const TPQ=480;
+const BAR=TPQ*4;
+const TOTAL=48;
 
-function vlq(value) {
-  let buffer = value & 0x7f;
-  const result = [];
-  while ((value >>= 7)) {
-    buffer <<= 8;
-    buffer |= ((value & 0x7f) | 0x80);
-  }
-  while (true) {
-    result.push(buffer & 255);
-    if (buffer & 128) buffer >>= 8;
-    else break;
-  }
-  return result;
+function vlq(v){
+ let b=v&127,r=[];
+ while(v>>=7){b<<=8;b|=(v&127)|128}
+ while(true){
+  r.push(b&255);
+  if(b&128)b>>=8;
+  else break;
+ }
+ return r;
 }
 
-function makeTrack(name, channel, program, notes) {
-  let events = [];
+function makeTrack(name,channel,program,notes){
+ let events=[];
+ const nb=[...new TextEncoder().encode(name)];
 
+ events.push({
+  t:0,p:0,d:[255,3,...vlq(nb.length),...nb]
+ });
+
+ if(program!==null){
   events.push({
-    tick:0,
-    priority:0,
-    data:[0xff,0x03,name.length,...Array.from(name,c=>c.charCodeAt(0))]
+   t:0,p:1,d:[192|channel,program]
   });
+ }
 
+ for(const n of notes){
   events.push({
-    tick:0,
-    priority:1,
-    data:[0xff,0x51,0x03,0x07,0xa1,0x20]
+   t:n.s,p:3,d:[144|channel,n.p,n.v]
   });
+  events.push({
+   t:n.s+n.l,p:2,d:[128|channel,n.p,0]
+  });
+ }
 
-  if (channel !== 9) {
-    events.push({
-      tick:0,
-      priority:2,
-      data:[0xc0 | channel,program]
-    });
+ events.sort((a,b)=>a.t-b.t||a.p-b.p);
+
+ let bytes=[],last=0;
+ for(const e of events){
+  bytes.push(...vlq(e.t-last),...e.d);
+  last=e.t;
+ }
+
+ bytes.push(0,255,47,0);
+
+ return [
+  77,84,114,107,
+  (bytes.length>>>24)&255,
+  (bytes.length>>>16)&255,
+  (bytes.length>>>8)&255,
+  bytes.length&255,
+  ...bytes
+ ];
+}
+
+function makeMidi(item){
+ const [filename,name,channel,program,notes]=item;
+ const tempo=Math.round(60000000/BPM);
+
+ const conductor=[
+  77,84,114,107,0,0,0,19,
+  0,255,81,3,
+  (tempo>>>16)&255,
+  (tempo>>>8)&255,
+  tempo&255,
+  0,255,88,4,4,2,24,8,
+  0,255,47,0
+ ];
+
+ const tracks=[
+  conductor,
+  makeTrack(name,channel,program,notes)
+ ];
+
+ const header=[
+  77,84,104,100,
+  0,0,0,6,
+  0,1,
+  0,2,
+  1,224
+ ];
+
+ return new Uint8Array([...header,...tracks.flat()]);
+}
+
+function note(p,s,l,v=90){
+ return {p,s,l,v};
+}
+
+// PIANO
+function piano(){
+ let a=[],mel=[67,71,74,71,69,71,74,79];
+ for(let b=0;b<TOTAL;b++)
+  mel.forEach((p,i)=>a.push(note(p,b*BAR+i*240,190,75)));
+ return a;
+}
+
+// BASS
+function bass(){
+ let a=[],roots=[43,40,45,38];
+ for(let b=0;b<TOTAL;b++){
+  let r=roots[b%4];
+  a.push(note(r,b*BAR,600,100));
+  a.push(note(r+7,b*BAR+960,400,85));
+  a.push(note(r+12,b*BAR+1440,400,85));
+ }
+ return a;
+}
+
+// DRUMS
+function drums(){
+ let a=[];
+ for(let b=0;b<TOTAL;b++){
+  for(let beat=0;beat<4;beat++){
+   let t=b*BAR+beat*TPQ;
+   a.push(note(beat%2===0?36:38,t,100,100));
+   a.push(note(42,t+240,80,65));
   }
-
-  notes.forEach(n => {
-    events.push({
-      tick:n.start,
-      priority:3,
-      data:[0x90 | channel,n.pitch,n.velocity || 90]
-    });
-    events.push({
-      tick:n.start+n.length,
-      priority:2,
-      data:[0x80 | channel,n.pitch,0]
-    });
-  });
-
-  events.sort((a,b) =>
-    a.tick-b.tick || a.priority-b.priority
-  );
-
-  let bytes = [];
-  let lastTick = 0;
-
-  events.forEach(e => {
-    bytes.push(...vlq(e.tick-lastTick),...e.data);
-    lastTick = e.tick;
-  });
-
-  bytes.push(0,0xff,0x2f,0);
-
-  return [
-    77,84,114,107,
-    (bytes.length>>>24)&255,
-    (bytes.length>>>16)&255,
-    (bytes.length>>>8)&255,
-    bytes.length&255,
-    ...bytes
-  ];
+ }
+ return a;
 }
 
-function makeMidi(name, channel, program, notes) {
-  const track = makeTrack(name,channel,program,notes);
-  const header = [
-    77,84,104,100,
-    0,0,0,6,
-    0,0,0,1,
-    1,224
-  ];
-  return new Uint8Array([...header,...track]);
+// SYNTH
+function synth(){
+ let a=[];
+ for(let b=0;b<TOTAL;b++)
+  [55,59,62,59].forEach((p,i)=>a.push(note(p,b*BAR+i*TPQ,400,60)));
+ return a;
 }
 
-function note(pitch,start,length,velocity=90) {
-  return {pitch,start,length,velocity};
+// GLOCKENSPIEL
+function glock(){
+ let a=[];
+ for(let b=0;b<TOTAL;b+=2)
+  [79,83,86,83].forEach((p,i)=>a.push(note(p,b*BAR+i*TPQ,300,70)));
+ return a;
 }
 
-const P = [
-  67,71,74,71,69,71,74,79,
-  74,71,69,67,69,71,74,71
+// DELTA: низкая вокальная партия
+function delta(){
+ let a=[];
+ const phrases=[
+  [55,57,59,62],[59,57,55,52],
+  [55,59,62,64],[62,59,57,55],
+  [52,55,57,59],[62,59,55,57],
+  [55,57,62,59],[55,52,55,55]
+ ];
+
+ for(let section=0;section<12;section++){
+  let ph=phrases[section%phrases.length];
+  let base=section*4;
+
+  // Дельта поёт в первом и третьем тактах
+  for(let [offset,index] of [[0,0],[2,2]]){
+   let start=(base+offset)*BAR;
+   a.push(note(ph[index],start,Math.round(BAR*0.88),112));
+   a.push(note(ph[index+1],start+BAR,TPQ*2,100));
+  }
+ }
+ a.push(note(55,46*BAR,2*BAR,118));
+ return a;
+}
+
+// HACK: ответная вокальная партия
+function hack(){
+ let a=[];
+ const phrases=[
+  [67,69,71,74],[71,69,67,64],
+  [67,71,74,76],[74,71,69,67],
+  [64,67,69,71],[74,71,67,69],
+  [67,69,74,71],[67,64,67,67]
+ ];
+
+ for(let section=0;section<12;section++){
+  let ph=phrases[section%phrases.length];
+  let base=section*4;
+
+  // Хак отвечает во втором и четвёртом тактах
+  for(let [offset,index] of [[1,0],[3,2]]){
+   let start=(base+offset)*BAR;
+   a.push(note(ph[index],start,Math.round(BAR*0.96),112));
+   a.push(note(ph[index+1],start+BAR,TPQ*2,100));
+  }
+ }
+ a.push(note(67,47*BAR,BAR,118));
+ return a;
+}
+
+const instruments=[
+ ["01_Piano.mid","Piano",0,0,piano(),"Acoustic Grand Piano"],
+ ["02_Bass.mid","Bass",1,33,bass(),"Fingered Bass"],
+ ["03_Drums.mid","Drums",9,null,drums(),"Standard Kit"],
+ ["04_Synth.mid","Synth",2,89,synth(),"Warm Pad"],
+ ["05_Glockenspiel.mid","Glockenspiel",3,9,glock(),"Glockenspiel"]
 ];
 
-function buildPiano() {
-  let a=[];
-  for(let bar=0;bar<12;bar++){
-    P.forEach((p,i)=>{
-      a.push(note(p,bar*BAR+i*120,100,75));
-    });
-  }
-  return a;
-}
-
-function buildBass() {
-  let a=[];
-  const roots=[43,40,45,38];
-  for(let bar=0;bar<12;bar++){
-    let root=roots[bar%4];
-    a.push(note(root,bar*BAR,300,100));
-    a.push(note(root+7,bar*BAR+480,220,85));
-    a.push(note(root+12,bar*BAR+960,220,85));
-    a.push(note(root+7,bar*BAR+1440,220,85));
-  }
-  return a;
-}
-
-function buildDrums() {
-  let a=[];
-  for(let bar=0;bar<12;bar++){
-    for(let beat=0;beat<4;beat++){
-      let t=bar*BAR+beat*BEAT;
-      a.push(note(beat%2===0?36:38,t,100,100));
-      a.push(note(42,t+240,80,65));
-    }
-  }
-  return a;
-}
-
-function buildSynth() {
-  let a=[];
-  for(let bar=0;bar<12;bar++){
-    [55,59,62,59].forEach((p,i)=>{
-      a.push(note(p,bar*BAR+i*480,400,60));
-    });
-  }
-  return a;
-}
-
-function buildGlock() {
-  let a=[];
-  for(let bar=0;bar<12;bar++){
-    [79,83,86,83].forEach((p,i)=>{
-      a.push(note(p,bar*BAR+i*480,180,75));
-    });
-  }
-  return a;
-}
-
-// Отдельная вокальная партия Дельты
-function buildDeltaVoice() {
-  let a=[];
-  const melody = [
-    [55,0,300],
-    [57,480,240],
-    [59,720,240],
-    [62,960,420],
-    [59,1440,240],
-    [57,1680,240],
-    [55,1920,600],
-    [62,2880,300],
-    [64,3360,240],
-    [62,3600,240],
-    [59,3840,420],
-    [57,4320,300],
-    [55,4800,600],
-    [59,5760,300],
-    [62,6240,240],
-    [64,6480,240],
-    [67,6720,600],
-    [64,7680,300],
-    [62,8160,240],
-    [59,8400,240],
-    [55,8640,900]
-  ];
-
-  melody.forEach(([pitch,start,length]) => {
-    a.push(note(pitch,start,length,105));
-  });
-
-  return a;
-}
-
-const data = [
-  ["01_Piano.mid","Piano",0,0,buildPiano()],
-  ["02_Bass.mid","Bass",1,33,buildBass()],
-  ["03_Drums.mid","Drums",9,0,buildDrums()],
-  ["04_Synth.mid","Synth",2,89,buildSynth()],
-  ["05_Glockenspiel.mid","Glockenspiel",3,9,buildGlock()],
-  ["06_Delta_Voice.mid","Delta Voice",4,33,buildDeltaVoice()]
+const voices=[
+ ["06_Delta_Voice.mid","Delta Voice",4,38,delta(),"Synth Bass 2"],
+ ["07_Hack_Voice.mid","Hack Voice",5,52,hack(),"Choir Aahs"]
 ];
 
-function downloadMidi(item) {
-  const [filename,name,channel,program,notes] = item;
-  const midi=makeMidi(name,channel,program,notes);
-  const blob=new Blob([midi],{type:"audio/midi"});
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement("a");
-  link.href=url;
-  link.download=filename;
-  link.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1500);
+function download(item){
+ const data=makeMidi(item);
+ const blob=new Blob([data],{type:"audio/midi"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download=item[0];
+ a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 
-const container=document.getElementById("tracks");
+function card(item,parent,cls){
+ const div=document.createElement("div");
+ div.className="card "+cls;
 
-data.forEach((item,index)=>{
-  const div=document.createElement("div");
-  div.className="track";
-  div.innerHTML=`
-    <h3>${item[1]}</h3>
-    <p class="small">${item[0]}</p>
-    <button>Скачать MIDI</button>
-  `;
-  div.querySelector("button").onclick=()=>downloadMidi(item);
-  container.appendChild(div);
-});
+ const h=document.createElement("h3");
+ h.textContent=item[1];
+
+ const p=document.createElement("p");
+ p.className="muted";
+ p.textContent="Звук: "+item[5];
+
+ const file=document.createElement("small");
+ file.textContent=item[0];
+
+ const btn=document.createElement("button");
+ btn.textContent="Скачать MIDI";
+ btn.onclick=()=>download(item);
+
+ div.append(h,p,file,document.createElement("br"),btn);
+ parent.appendChild(div);
+}
+
+instruments.forEach(x=>card(x,document.getElementById("instruments"),""));
+voices.forEach((x,i)=>card(x,document.getElementById("voices"),i===0?"delta":"hack"));
 </script>
 </body>
 </html>
