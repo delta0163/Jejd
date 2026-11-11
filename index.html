@@ -4,324 +4,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EXPERIMENT — MIDI Studio</title>
+<title>Universe Chart Generator</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#10121b;color:#eee;font-family:Arial,sans-serif;padding:18px}
-main{max-width:700px;margin:auto}
-h1{color:#ff5252;text-align:center;letter-spacing:3px}
-.sub{text-align:center;color:#aaa}
-.panel{background:#1c2030;border:1px solid #383e55;border-radius:14px;padding:16px;margin:14px 0}
-button{width:100%;padding:14px;margin:6px 0;border:0;border-radius:9px;background:#a52e3c;color:white;font-size:16px;font-weight:bold}
-button:active{background:#e64b5c}
-.track{padding:10px;border-bottom:1px solid #34394d}
-small{color:#aaa}
+body{background:#111522;color:white;font-family:Arial;padding:18px}
+main{max-width:600px;margin:auto}
+.card{background:#20283a;border-radius:14px;padding:16px;margin:14px 0}
+button{width:100%;padding:14px;margin-top:10px;background:#a52d43;color:white;border:0;border-radius:9px;font-weight:bold;font-size:16px}
+small{color:#bbc2d4}
 </style>
 </head>
 <body>
 <main>
-<h1>EXPERIMENT</h1>
-<p class="sub">Friday Night Funkin': Universe · Week 1</p>
-<div class="panel">
-<b>Музыкальная структура</b>
-<p>145 BPM · D Minor · 4/4 · 64 такта</p>
-<p>Начало → Разгон → Напряжение → Кульминация → Финал</p>
-<button onclick="downloadAll()">СКАЧАТЬ ВСЕ MIDI-ДОРОЖКИ</button>
+<h2>UNIVERSE — CHART GENERATOR</h2>
+<p>FNF 0.8.8 · V-Slice · Normal</p>
+
+<div class="card">
+<h3>First Meeting</h3>
+<p>112 BPM · 48 тактов · дружеский баттл</p>
+<button onclick="download('first-meeting')">Скачать First Meeting Chart</button>
 </div>
-<div class="panel" id="tracks"></div>
-<div class="panel">
-<b>Что изменено</b>
-<p>Электрогитара получила отдельные риффы, аккорды и ускоряющиеся партии.</p>
-<p>В середине песни плотность ударных, баса и вокала заметно возрастает.</p>
+
+<div class="card">
+<h3>Experiment</h3>
+<p>145 BPM · 64 такта · нарастающая сложность</p>
+<button onclick="download('experiment')">Скачать Experiment Chart</button>
+</div>
+
+<div class="card">
+<b>Важно</b>
+<p><small>Это стартовые чарты, а не точная расстановка нот по аудио. После проверки их нужно будет синхронизировать с песнями.</small></p>
 </div>
 </main>
+
 <script>
-const BPM=145, TPQ=480, BAR=1920, TOTAL=64;
-const names=[
-"01_Piano.mid","02_Bass.mid","03_Drums.mid","04_Synth.mid",
-"05_Glockenspiel.mid","06_Electric_Guitar.mid",
-"07_Delta_Voice.mid","08_Hack_Voice.mid"
-];
-const files=[];
+function makeChart(id){
+ const isExp=id==="experiment";
+ const bpm=isExp?145:112;
+ const bars=isExp?64:48;
+ const beat=60000/bpm;
+ const notes=[];
+ const lanes=[0,1,2,3];
+ const player=[4,5,6,7];
 
-function vlq(n){
- n=Math.max(0,Math.floor(n));
- let b=n&127;
- while(n>>=7)b=(b<<8)|((n&127)|128);
- let out=[];
- while(true){
-  out.push(b&255);
-  if(b&128)b>>=8;else break;
+ function add(time,lane,length=0){
+  const n={t:Math.round(time),d:lane};
+  if(length>0)n.l=Math.round(length);
+  notes.push(n);
  }
- return out;
-}
-function bytes(n){return[(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255]}
-function chunk(id,data){return[...id.split("").map(c=>c.charCodeAt(0)),...bytes(data.length),...data]}
-function makeMidi(events,program,channel=0){
- let conductor=[
-  0,255,81,3,
-  (60000000/BPM>>>16)&255,
-  (60000000/BPM>>>8)&255,
-  (60000000/BPM)&255,
-  0,255,88,4,4,2,24,8,
-  0,255,47,0
- ];
- let ev=[...events];
- if(program!==null)ev.push({t:0,type:"program",n:program,v:0});
- ev.sort((a,b)=>a.t-b.t||
-  ((a.type==="off"?0:a.type==="program"?1:2)-
-   (b.type==="off"?0:b.type==="program"?1:2)));
- let data=[],last=0;
- for(const e of ev){
-  data.push(...vlq(e.t-last));last=e.t;
-  if(e.type==="on")data.push(0x90|channel,e.n,e.v);
-  else if(e.type==="off")data.push(0x80|channel,e.n,0);
-  else if(e.type==="program")data.push(0xC0|channel,e.n);
- }
- data.push(0,255,47,0);
- let header=[77,84,104,100,...bytes(6),0,1,0,2,1,224];
- return new Uint8Array([...header,...chunk("MTrk",conductor),...chunk("MTrk",data)]);
-}
-function add(list,t,n,d,v=90){
- if(n<0||n>127||d<=0)return;
- list.push({t,type:"on",n,v});
- list.push({t:t+d,type:"off",n,v:0});
-}
-function save(name,data){
- const blob=new Blob([data],{type:"audio/midi"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;a.download=name;a.click();
- setTimeout(()=>URL.revokeObjectURL(url),1500);
-}
-function section(bar){
- if(bar<8)return 0;
- if(bar<20)return 1;
- if(bar<36)return 2;
- if(bar<52)return 3;
- return 4;
-}
-const roots=[38,46,41,36]; // D, Bb, F, C
-function rootAt(bar){return roots[Math.floor(bar/4)%4]}
-function chordAt(bar){
- const r=rootAt(bar);
- return [r,r+3,r+7,r+10];
-}
 
-function piano(){
- let e=[];
- for(let b=0;b<TOTAL;b++){
-  let s=section(b),ch=chordAt(b),v=[48,59,70,62,76][s];
-  for(let beat=0;beat<4;beat++){
-   if(s===0&&beat%2)continue;
-   let t=b*BAR+beat*480;
-   ch.forEach((n,i)=>add(e,t,n+24,420,v-i*3));
-  }
-  if(s>=2){
-   for(let beat=0;beat<4;beat++){
-    let n=chordAt(b)[(beat+b)%4]+36;
-    add(e,b*BAR+beat*480+240,n,150,52+s*5);
-   }
-  }
- }
- return e;
-}
-function bass(){
- let e=[];
- for(let b=0;b<TOTAL;b++){
-  let s=section(b),r=rootAt(b),v=[58,72,88,102,62][s];
-  if(s===0){
-   add(e,b*BAR,r,850,v);
-   add(e,b*BAR+960,r+12,700,v-8);
+ for(let bar=0;bar<bars;bar++){
+  const start=bar*beat*4;
+  let density=1;
+
+  if(isExp){
+   if(bar<8)density=1;
+   else if(bar<20)density=2;
+   else if(bar<36)density=3;
+   else if(bar<52)density=4;
+   else density=2;
   }else{
-   let steps=s>=2?8:4;
-   for(let i=0;i<steps;i++){
-    let t=b*BAR+i*(1920/steps);
-    let n=r+(i%4===2?7:i%4===3?12:0);
-    add(e,t,n,steps===8?190:390,v+(i%2)*5);
-   }
+   if(bar<8)density=1;
+   else if(bar<32)density=2;
+   else density=3;
   }
- }
- return e;
-}
-function drums(){
- let e=[];
- for(let b=0;b<TOTAL;b++){
-  let s=section(b);
-  let kick=s===0?1:s===1?2:s===2?3:s===3?4:2;
-  let snare=s===0?1:s===1?2:s===2?3:3;
-  let hat=s===0?2:s===1?4:s===2?8:s===3?8:4;
-  for(let beat=0;beat<4;beat++){
-   let t=b*BAR+beat*480;
-   if(beat% (s===0?2:1)===0)add(e,t,36,100,80+s*12);
-   if(beat===1||beat===3){
-    if(s>=1)add(e,t,38,100,65+s*12);
-   }
-  }
-  for(let i=0;i<hat;i++){
-   let t=b*BAR+i*(1920/hat);
-   add(e,t,42,65,35+s*10);
-  }
-  if(s>=2&&b%2===0)add(e,b*BAR,49,200,75+s*8);
- }
- return e;
-}
-function synth(){
- let e=[];
- for(let b=0;b<TOTAL;b++){
-  let s=section(b),ch=chordAt(b);
-  let v=[35,48,62,75,38][s];
-  ch.forEach((n,i)=>add(e,b*BAR,n+48,BAR-30,v-i*2));
-  if(s>=2){
-   for(let i=0;i<4;i++){
-    add(e,b*BAR+i*480+240,ch[i]+60,180,50+s*8);
-   }
-  }
- }
- return e;
-}
-function glock(){
- let e=[];
- const melody=[74,77,81,79,74,72,69,72];
- for(let b=0;b<TOTAL;b++){
-  let s=section(b);
-  if(s===0||s===4){
-   add(e,b*BAR,melody[b%8],650,55);
-   continue;
-  }
-  let count=s===1?2:s===2?4:6;
-  for(let i=0;i<count;i++){
-   let n=melody[(b+i)%8]+(s>=2&&i%3===2?12:0);
-   add(e,b*BAR+i*(1920/count),n,180,48+s*5);
-  }
- }
- return e;
-}
 
-// Отдельная полноценная партия Overdriven Guitar
-function guitar(){
- let e=[];
- const riffs=[
-  [38,45,50,45,41,48,53,48],
-  [46,53,58,53,43,50,55,50],
-  [41,48,53,48,36,43,48,43],
-  [36,43,48,43,38,45,50,45]
- ];
- for(let b=0;b<TOTAL;b++){
-  let s=section(b),r=rootAt(b),riff=riffs[Math.floor(b/4)%4];
-  if(s===0){
-   // Редкие гитарные акценты в начале
-   add(e,b*BAR,r+12,700,67);
-   if(b%2===0)add(e,b*BAR+960,r+19,400,58);
+  // Чередование партий Хака и Дельты
+  const opponentTurn=Math.floor(bar/2)%2===0;
+  const first=opponentTurn?lanes:player;
+  const second=opponentTurn?player:lanes;
+
+  // Основная фраза
+  for(let i=0;i<4*density;i++){
+   const step=beat/density;
+   const time=start+i*step;
+   const lane=first[(i+bar)%4];
+   add(time,lane);
   }
-  if(s===1){
-   // Рифф постепенно становится активнее
-   for(let i=0;i<8;i++){
-    let n=riff[i]+12;
-    add(e,b*BAR+i*240,n,190,75+(i%2)*8);
-   }
-   if(b%2===0){
-    [r+24,r+31,r+36].forEach(n=>add(e,b*BAR,n,360,65));
-   }
-  }
-  if(s===2){
-   // Напряжение: синкопы и более плотные риффы
-   for(let i=0;i<16;i++){
-    let n=riff[i%8]+12+(i%4===3?12:0);
-    add(e,b*BAR+i*120,n,100,88+(i%3)*5);
-   }
-   if(b%2===0){
-    [r,r+7,r+12].forEach(n=>add(e,b*BAR,n+12,850,82));
-   }
-  }
-  if(s===3){
-   // Кульминация: мощные аккорды и быстрые ответы
-   for(let i=0;i<16;i++){
-    let n=riff[(i+b)%8]+24;
-    add(e,b*BAR+i*120,n,105,112+(i%2)*7);
-   }
-   for(let beat=0;beat<4;beat++){
-    if(beat===0||beat===2){
-     [r+12,r+19,r+24].forEach(n=>
-      add(e,b*BAR+beat*480,n,400,118));
+
+  // Ответ второго персонажа
+  if(bar%2===1 || density>=3){
+   for(let i=0;i<Math.min(4*density,12);i++){
+    const step=beat/density;
+    const time=start+i*step+step/2;
+    if(time<(bar+1)*beat*4){
+     const lane=second[(i+bar+1)%4];
+     add(time,lane);
     }
    }
   }
-  if(s===4){
-   // Финальное затухание
-   if(b%2===0)add(e,b*BAR,r+12,800,55);
-   if(b%4===3)add(e,b*BAR+960,r+19,500,42);
-  }
- }
- return e;
-}
-function delta(){
- let e=[];
- const phrases=[
- [50,53,57,60,57,53,50,48],
- [50,53,57,62,60,57,53,50],
- [50,55,57,60,62,60,57,53],
- [62,60,57,53,57,60,65,62]
- ];
- for(let b=0;b<TOTAL;b++){
-  let s=section(b),p=phrases[Math.floor(b/4)%4];
-  if(s===0||s===4){
-   if(b%2===0)add(e,b*BAR,p[b%8],650,75);
-  }else{
-   let count=s===1?2:s===2?4:4;
-   for(let i=0;i<count;i++){
-    let n=p[(b+i)%8]+(s===3?2:0);
-    add(e,b*BAR+i*(1920/count),n,
-      s===3?390:330,85+s*8);
-   }
-   if(s>=2&&b%2===1)add(e,b*BAR+1440,p[(b+4)%8]+12,430,100);
-  }
- }
- return e;
-}
-function hack(){
- let e=[];
- const phrases=[
- [65,69,72,74,72,69,67,65],
- [69,72,74,77,74,72,69,67],
- [72,74,77,79,77,74,72,69],
- [77,74,72,69,72,74,79,77]
- ];
- for(let b=0;b<TOTAL;b++){
-  let s=section(b),p=phrases[Math.floor(b/4)%4];
-  if(s===0||s===4){
-   if(b%2===1)add(e,b*BAR+480,p[b%8],600,65);
-  }else{
-   let count=s===1?2:s===2?4:6;
-   for(let i=0;i<count;i++){
-    add(e,b*BAR+i*(1920/count)+240,p[(b+i)%8],
-      s===3?300:260,80+s*8);
+
+  // Дополнительные ноты в напряжённых частях Experiment
+  if(isExp&&bar>=20&&bar<52){
+   for(let i=0;i<4;i++){
+    const time=start+i*beat+beat/2;
+    add(time,player[(i+bar)%4]);
    }
   }
+
+  // Длинные ноты в концовках музыкальных фраз
+  if(isExp&&bar>=36&&bar<52&&bar%4===3){
+   add(start+beat*2,player[bar%4],beat*1.5);
+  }
+
+  if(!isExp&&bar%8===7){
+   add(start+beat*2,player[bar%4],beat);
+  }
  }
- return e;
+
+ notes.sort((a,b)=>a.t-b.t);
+
+ return {
+  version:"2.0.0",
+  scrollSpeed:{
+   normal:2.5
+  },
+  events:[],
+  notes:{
+   normal:notes
+  },
+  generatedBy:"Universe Chart Generator"
+ };
 }
-const builders=[
- ()=>piano(),()=>bass(),()=>drums(),()=>synth(),
- ()=>glock(),()=>guitar(),()=>delta(),()=>hack()
-];
-const programs=[0,33,null,89,9,29,38,52];
-function generate(i){
- let channel=i===2?9:0;
- return makeMidi(builders[i](),programs[i],channel);
+
+function download(id){
+ const data=makeChart(id);
+ const blob=new Blob(
+  [JSON.stringify(data,null,2)],
+  {type:"application/json"}
+ );
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download=id+"-chart.json";
+ a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
-function downloadAll(){
- for(let i=0;i<names.length;i++){
-  setTimeout(()=>save(names[i],generate(i)),i*450);
- }
-}
-function downloadOne(i){save(names[i],generate(i))}
-document.getElementById("tracks").innerHTML=
-"<b>Отдельные MIDI-дорожки</b>"+
-names.map((n,i)=>`<div class="track">${n}<br><small>${
-["Piano","Fingered Bass","Drums","Warm Pad","Glockenspiel",
-"Overdriven Electric Guitar","Delta — Synth Bass 2","Hack — Choir Aahs"][i]
-}</small><button onclick="downloadOne(${i})">Скачать дорожку</button></div>`).join("");
 </script>
 </body>
 </html>
