@@ -3,195 +3,279 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Universe MIDI Creator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Meeting MIDI Studio</title>
 <style>
+* { box-sizing: border-box; }
 body {
-    background: #101018;
-    color: white;
-    font-family: Arial;
-    text-align: center;
-    padding: 25px;
+  margin: 0;
+  padding: 22px;
+  background: #10121c;
+  color: white;
+  font-family: Arial, sans-serif;
 }
-button {
-    background: #8b35dc;
-    color: white;
-    border: none;
-    padding: 16px 25px;
-    border-radius: 12px;
-    font-size: 18px;
-    margin-top: 20px;
+.container {
+  max-width: 600px;
+  margin: auto;
 }
-button:active { background: #56218c; }
-p { color: #bbb; }
+h1 { color: #a98aff; }
+.subtitle { color: #aaa; }
+.track {
+  background: #202337;
+  padding: 15px;
+  border-radius: 12px;
+  margin: 12px 0;
+}
+button, a {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #8060d8;
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+button:active, a:active { background: #5940a0; }
+#status { color: #b9a5ff; margin-top: 15px; }
 </style>
 </head>
 <body>
+<div class="container">
+<h1>FIRST MEETING</h1>
+<p class="subtitle">MIDI Studio • Friday Night Funkin': Universe</p>
+<p>112 BPM | G Major | 4/4 | 48 тактов</p>
 
-<h1>UNIVERSE</h1>
-<h2>First Meeting MIDI Creator</h2>
+<div id="tracks"></div>
 
-<p>Friday Night Funkin': Universe</p>
-<p>Темп: 112 BPM</p>
-
-<button onclick="createMidi()">Создать MIDI</button>
-
-<p id="status">Ожидание...</p>
+<button onclick="downloadAll()">Скачать все 5 MIDI</button>
+<p id="status">Готово к созданию партий.</p>
+</div>
 
 <script>
-function vlq(n) {
-    let bytes = [n & 127];
-    while ((n >>= 7)) {
-        bytes.unshift((n & 127) | 128);
-    }
-    return bytes;
+const BPM = 112;
+const TPQ = 480;
+const BAR = TPQ * 4;
+const BARS = 48;
+
+const chords = [
+  [55, 59, 62], // G
+  [50, 54, 57], // D
+  [52, 55, 59], // Em
+  [48, 52, 55]  // C
+];
+
+const roots = [43, 38, 40, 36];
+
+function vlq(value) {
+  let buffer = value & 127;
+  const bytes = [];
+  while ((value >>= 7)) {
+    buffer <<= 8;
+    buffer |= ((value & 127) | 128);
+  }
+  while (true) {
+    bytes.push(buffer & 255);
+    if (buffer & 128) buffer >>= 8;
+    else break;
+  }
+  return bytes;
 }
 
-function track(events, name) {
-    let data = [0, 255, 3, name.length, ...new TextEncoder().encode(name)];
-    let last = 0;
+function makeTrack(name, channel, program, notes, isDrums=false) {
+  const events = [];
 
-    events.sort((a,b) => a[0]-b[0] || a[1]-b[1]);
+  function event(tick, priority, bytes) {
+    events.push({tick, priority, bytes});
+  }
 
-    for (const [time, priority, msg] of events) {
-        data.push(...vlq(time-last), ...msg);
-        last = time;
-    }
+  const nameBytes = [...new TextEncoder().encode(name)];
+  event(0, 0, [0xFF, 0x03, ...vlq(nameBytes.length), ...nameBytes]);
 
-    data.push(0,255,47,0);
-    return [
-        77,84,114,107,
-        (data.length>>>24)&255,
-        (data.length>>>16)&255,
-        (data.length>>>8)&255,
-        data.length&255,
-        ...data
-    ];
+  const micros = Math.round(60000000 / BPM);
+  event(0, 1, [
+    0xFF, 0x51, 0x03,
+    (micros >> 16) & 255,
+    (micros >> 8) & 255,
+    micros & 255
+  ]);
+
+  if (!isDrums && program !== null) {
+    event(0, 2, [0xC0 | channel, program]);
+  }
+
+  function note(pitch, velocity, start, duration) {
+    event(start, 3, [0x90 | channel, pitch, velocity]);
+    event(start + duration, 2, [0x80 | channel, pitch, 0]);
+  }
+
+  notes(note);
+
+  events.sort((a,b) =>
+    a.tick - b.tick || a.priority - b.priority
+  );
+
+  let previous = 0;
+  const data = [];
+
+  for (const e of events) {
+    data.push(...vlq(e.tick - previous), ...e.bytes);
+    previous = e.tick;
+  }
+
+  data.push(0, 0xFF, 0x2F, 0);
+
+  return [
+    0x4D,0x54,0x72,0x6B,
+    (data.length >>> 24)&255,
+    (data.length >>> 16)&255,
+    (data.length >>> 8)&255,
+    data.length&255,
+    ...data
+  ];
 }
 
-function createMidi() {
-    const TPQ = 480;
-    const BAR = 1920;
-    const tracks = [];
+function makeMidi(track) {
+  const header = [
+    0x4D,0x54,0x68,0x64,
+    0,0,0,6,
+    0,0,
+    0,1,
+    (TPQ >> 8)&255, TPQ&255
+  ];
+  return new Uint8Array([...header, ...track]);
+}
 
-    const tempo = Math.round(60000000 / 112);
-    tracks.push(track([
-        [0,0,[255,81,3,(tempo>>16)&255,(tempo>>8)&255,tempo&255]],
-        [0,0,[255,88,4,4,2,24,8]]
-    ], "Tempo"));
+function piano(note) {
+  const melody = [
+    [74,0],[71,240],[67,480],[71,720],
+    [74,960],[76,1200],[74,1440],[71,1680]
+  ];
 
-    const chords = [
-        [55,59,62],
-        [50,54,57],
-        [52,55,59],
-        [48,52,55]
-    ];
+  for (let bar=0; bar<BARS; bar++) {
+    const start = bar * BAR;
+    const chord = chords[bar % 4];
 
-    const melodies = [
-        [74,76,79,76,74,71,74,76],
-        [79,81,83,81,79,76,74,76],
-        [71,74,79,74,71,69,71,74],
-        [76,74,72,71,69,71,74,76]
-    ];
-
-    // Мелодия
-    let lead = [[0,0,[192,80]]];
-
-    for(let bar=0; bar<48; bar++) {
-        const melody = melodies[bar%4];
-
-        for(let i=0; i<8; i++) {
-            const start = bar*BAR+i*240;
-            const note = melody[i];
-
-            lead.push([start,2,[144,note,95]]);
-            lead.push([start+200,1,[128,note,0]]);
-        }
+    for (const [pitch, offset] of melody) {
+      note(pitch, 88, start + offset, 190);
     }
 
-    tracks.push(track(lead,"Lead Melody"));
-
-    // Пианино
-    let piano = [[0,0,[193,4]]];
-
-    for(let bar=0; bar<48; bar++) {
-        for(let beat=0; beat<4; beat++) {
-            const start = bar*BAR+beat*TPQ;
-
-            for(const note of chords[bar%4]) {
-                piano.push([start,2,[145,note,65]]);
-                piano.push([start+400,1,[129,note,0]]);
-            }
-        }
-    }
-
-    tracks.push(track(piano,"Piano"));
-
-    // Бас
-    let bass = [[0,0,[194,33]]];
-
-    for(let bar=0; bar<48; bar++) {
-        const root = chords[bar%4][0]-12;
-
-        for(let beat=0; beat<4; beat++) {
-            const start = bar*BAR+beat*TPQ;
-            const note = beat%2===0 ? root : root+7;
-
-            bass.push([start,2,[146,note,80]]);
-            bass.push([start+400,1,[130,note,0]]);
-        }
-    }
-
-    tracks.push(track(bass,"Bass"));
-
-    // Ударные
-    let drums = [];
-
-    for(let bar=0; bar<48; bar++) {
-        for(let beat=0; beat<4; beat++) {
-            const start = bar*BAR+beat*TPQ;
-            const note = beat%2===0 ? 36 : 38;
-
-            drums.push([start,2,[153,note,85]]);
-            drums.push([start+100,1,[137,note,0]]);
-
-            drums.push([start,2,[153,42,50]]);
-            drums.push([start+60,1,[137,42,0]]);
-        }
-    }
-
-    tracks.push(track(drums,"Drums"));
-
-    const header = [
-        77,84,104,100,
-        0,0,0,6,
-        0,1,
-        0,tracks.length,
-        1,224
-    ];
-
-    const midi = new Uint8Array([
-        ...header,
-        ...tracks.flat()
-    ]);
-
-    const blob = new Blob([midi], {
-        type: "audio/midi"
+    chord.forEach((pitch, i) => {
+      note(pitch + 12, 58, start + 0, 420);
     });
+  }
+}
 
+function bass(note) {
+  for (let bar=0; bar<BARS; bar++) {
+    const start = bar * BAR;
+    const root = roots[bar % 4];
+
+    for (let beat=0; beat<4; beat++) {
+      note(root, 90, start + beat*TPQ, 400);
+    }
+  }
+}
+
+function drums(note) {
+  for (let bar=0; bar<BARS; bar++) {
+    const start = bar * BAR;
+
+    for (let beat=0; beat<4; beat++) {
+      const t = start + beat*TPQ;
+
+      if (beat === 0 || beat === 2)
+        note(36, 105, t, 100);
+
+      if (beat === 1 || beat === 3)
+        note(38, 95, t, 100);
+
+      note(42, 58, t, 80);
+      note(42, 45, t + 240, 70);
+    }
+  }
+}
+
+function synth(note) {
+  for (let bar=0; bar<BARS; bar++) {
+    const start = bar * BAR;
+    const chord = chords[bar % 4];
+
+    chord.forEach(pitch => {
+      note(pitch + 12, 65, start, BAR - 40);
+    });
+  }
+}
+
+function glock(note) {
+  for (let bar=0; bar<BARS; bar++) {
+    const start = bar * BAR;
+    const chord = chords[bar % 4];
+
+    note(chord[0] + 24, 75, start, 300);
+    note(chord[1] + 24, 65, start + 960, 300);
+    note(chord[2] + 24, 75, start + 1440, 300);
+  }
+}
+
+const definitions = [
+  {name:"Piano", file:"01_Piano.mid", channel:0, program:0, fn:piano},
+  {name:"Bass", file:"02_Bass.mid", channel:1, program:33, fn:bass},
+  {name:"Drums", file:"03_Drums.mid", channel:9, program:null, fn:drums, drums:true},
+  {name:"Synth", file:"04_Synth.mid", channel:2, program:89, fn:synth},
+  {name:"Glockenspiel", file:"05_Glockenspiel.mid", channel:3, program:9, fn:glock}
+];
+
+const generated = [];
+
+function generate(def) {
+  const track = makeTrack(
+    def.name, def.channel, def.program, def.fn, def.drums
+  );
+  return makeMidi(track);
+}
+
+function download(def) {
+  try {
+    const bytes = generate(def);
+    const blob = new Blob([bytes], {type:"audio/midi"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-
     a.href = url;
-    a.download = "First_Meeting.mid";
+    a.download = def.file;
+    document.body.appendChild(a);
     a.click();
-
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
-
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
     document.getElementById("status").textContent =
-        "MIDI создан! Проверь загрузки.";
+      "Создан файл: " + def.file;
+  } catch (error) {
+    document.getElementById("status").textContent =
+      "Ошибка: " + error.message;
+  }
 }
-</script>
 
+function downloadAll() {
+  definitions.forEach((def, i) => {
+    setTimeout(() => download(def), i * 900);
+  });
+}
+
+const tracks = document.getElementById("tracks");
+
+definitions.forEach(def => {
+  const div = document.createElement("div");
+  div.className = "track";
+  div.innerHTML =
+    "<strong>" + def.name + "</strong>" +
+    "<button>Скачать " + def.file + "</button>";
+  div.querySelector("button").onclick = () => download(def);
+  tracks.appendChild(div);
+});
+</script>
 </body>
 </html>
