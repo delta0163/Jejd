@@ -3,170 +3,379 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Universe Mod Builder</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:18px;background:#10101a;color:#eee;font-family:Arial,sans-serif}
-main{max-width:720px;margin:auto}
-h1{color:#bd91ff;text-align:center}
-h2{color:#bd91ff;font-size:19px}
-p{color:#bcbccc;line-height:1.5}
-.card{background:#1d1d2b;padding:16px;border-radius:14px;margin:15px 0}
+body{margin:0;padding:15px;background:#10101a;color:#eee;font-family:Arial}
+main{max-width:850px;margin:auto}
+h1{text-align:center;color:#c49aff}
+h2{color:#c49aff;font-size:19px}
+.card{background:#1d1d2c;padding:15px;border-radius:13px;margin:14px 0}
 label{display:block;margin:12px 0 6px;color:#ccc}
-input,textarea,select{width:100%;padding:12px;border:1px solid #48445e;border-radius:8px;background:#11111c;color:white}
+input,select,textarea{width:100%;padding:11px;background:#11111c;color:white;border:1px solid #49445e;border-radius:8px}
 input[type=file]{font-size:13px}
-button{width:100%;padding:15px;margin-top:15px;border:0;border-radius:9px;background:#8955ce;color:white;font-weight:bold;font-size:16px}
-button:active{background:#6739a6}
-.small{font-size:12px;color:#999}
-#status{white-space:pre-wrap;color:#b9f3c7}
+button{padding:12px;border:0;border-radius:8px;background:#8955ce;color:white;font-weight:bold;margin:5px 0;cursor:pointer}
+button:active{background:#6336a5}
+button.secondary{background:#45445b}
+button.danger{background:#963c56}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:100px}
+.small{font-size:12px;color:#aaa;line-height:1.5}
+canvas{width:100%;background:#10101b;border-radius:8px;touch-action:manipulation}
+#chartCanvas{height:390px}
+#status{white-space:pre-wrap;color:#b8f2c4}
+.note{color:#c7a7ff}
+audio{width:100%;margin-top:10px}
 </style>
 </head>
 <body>
 <main>
+
 <h1>UNIVERSE MOD BUILDER</h1>
-<p style="text-align:center">Сборщик мода для Friday Night Funkin' 0.8.8</p>
+<p style="text-align:center;color:#aaa">Friday Night Funkin' 0.8.8 • Mod Creator</p>
 
 <div class="card">
-<h2>1. Данные мода</h2>
-
-<label>Название мода</label>
+<h2>1. Информация о моде</h2>
+<label>Название</label>
 <input id="modTitle" value="Friday Night Funkin': Universe">
-
 <label>Описание</label>
 <textarea id="description">A new story featuring Delta and Hack.</textarea>
-
 <label>Автор</label>
 <input id="author" value="Universe Team">
-
 <label>Версия мода</label>
 <input id="modVersion" value="1.0.0">
-
-<label>API version игры</label>
-<input id="apiVersion" value="0.8.8">
-<p class="small">Если игра не загрузит мод, значение API version потребуется сверить с требованиями твоей сборки.</p>
+<label>API version</label>
+<input id="apiVersion" value="0.8.0">
 </div>
 
 <div class="card">
 <h2>2. Неделя</h2>
-
 <label>Название недели</label>
 <input id="weekTitle" value="UNIVERSE">
-
-<label>Цвет фона меню</label>
+<label>Цвет фона</label>
 <input id="background" type="color" value="#171727">
-
-<p class="small">Картинка заголовка недели будет создана автоматически.</p>
 </div>
 
 <div class="card">
-<h2>3. First Meeting</h2>
-
-<label>Название песни</label>
-<input id="name1" value="First Meeting">
-
-<label>Исполнитель</label>
-<input id="artist1" value="Universe Team">
-
-<label>BPM</label>
-<input id="bpm1" type="number" value="112" min="1">
-
-<label>Рейтинг сложности (0–10)</label>
-<input id="rating1" type="number" value="3" min="0" max="10">
-
-<label>Chart JSON (необязательно)</label>
-<input id="chart1" type="file" accept=".json,application/json">
-
-<label>Музыка Inst.ogg (необязательно для проверки меню)</label>
-<input id="audio1" type="file" accept=".ogg,audio/ogg">
-</div>
-
-<div class="card">
-<h2>4. Experiment</h2>
-
-<label>Название песни</label>
-<input id="name2" value="Experiment">
-
-<label>Исполнитель</label>
-<input id="artist2" value="Universe Team">
-
-<label>BPM</label>
-<input id="bpm2" type="number" value="145" min="1">
-
-<label>Рейтинг сложности (0–10)</label>
-<input id="rating2" type="number" value="5" min="0" max="10">
-
-<label>Chart JSON (необязательно)</label>
-<input id="chart2" type="file" accept=".json,application/json">
-
-<label>Музыка Inst.ogg (необязательно для проверки меню)</label>
-<input id="audio2" type="file" accept=".ogg,audio/ogg">
-</div>
-
-<div class="card">
-<h2>5. Персонажи</h2>
-<p>Пока используем стандартных персонажей, потому что собственные спрайты Дельты и Хака ещё не добавлены.</p>
-
+<h2>3. Песни и персонажи</h2>
 <label>Игрок</label>
 <input id="player" value="bf">
-
 <label>Соперник</label>
 <input id="opponent" value="dad">
-
 <label>Girlfriend</label>
 <input id="girlfriend" value="gf">
+<p class="small">Пока используем стандартные персонажи. Для собственных Дельты и Хака позднее добавим спрайты и character JSON.</p>
 </div>
 
-<button onclick="build()">СОБРАТЬ МОД ZIP</button>
 <div class="card">
-<h2>Результат</h2>
-<p id="status">Заполни поля и нажми кнопку.</p>
+<h2>4. Иконки персонажей</h2>
+<p class="small">Загрузи PNG-изображения иконок. Они попадут в архив мода.</p>
+
+<label>Иконка Дельты</label>
+<input type="file" id="deltaIcon" accept="image/png">
+<img id="deltaPreview" style="display:none;max-width:100px;max-height:100px;margin-top:10px">
+
+<label>Иконка Хака</label>
+<input type="file" id="hackIcon" accept="image/png">
+<img id="hackPreview" style="display:none;max-width:100px;max-height:100px;margin-top:10px">
+
+<p class="small">Пока это будут файлы ресурсов. Чтобы они появились во время боя, их нужно будет связать с персонажами в их настройках.</p>
 </div>
+
+<div class="card">
+<h2>5. Редактор чартов</h2>
+<p class="small">Выбери песню, загрузи аудио, включи воспроизведение и нажимай на дорожки, чтобы расставлять ноты.</p>
+
+<label>Выбрать песню</label>
+<select id="songSelect">
+<option value="first-meeting">First Meeting</option>
+<option value="experiment">Experiment</option>
+</select>
+
+<label>Аудиофайл</label>
+<input type="file" id="audioFile" accept="audio/*">
+<audio id="audio" controls></audio>
+
+<div class="row">
+<div>
+<label>BPM</label>
+<input id="chartBpm" type="number" value="112" min="1">
+</div>
+<div>
+<label>Делений на долю</label>
+<select id="grid">
+<option value="4">1/4</option>
+<option value="8">1/8</option>
+<option value="16">1/16</option>
+</select>
+</div>
+</div>
+
+<div class="row">
+<div>
+<label>Длина удержания (мс)</label>
+<input id="holdLength" type="number" value="0" min="0">
+</div>
+<div>
+<label>Скорость нот</label>
+<input id="scrollSpeed" type="number" value="1" min="0.1" step="0.1">
+</div>
+</div>
+
+<p class="small">Сетка показывает примерно 8 секунд музыки. Текущее время аудио находится внизу шкалы.</p>
+<canvas id="chartCanvas" width="800" height="390"></canvas>
+
+<div class="row">
+<button class="secondary" onclick="seek(-2)">◀ -2 сек</button>
+<button class="secondary" onclick="seek(2)">+2 сек ▶</button>
+<button class="secondary" onclick="clearChart()">Очистить чарт</button>
+</div>
+
+<div class="row">
+<div>
+<label>Сложность</label>
+<select id="difficulty">
+<option value="normal">Normal</option>
+</select>
+</div>
+<div>
+<label>Количество нот</label>
+<input id="noteCount" readonly value="0">
+</div>
+</div>
+
+<button onclick="downloadChart()">СКАЧАТЬ CHART JSON</button>
+<p class="small">Игрок: дорожки 1–4. Соперник: дорожки 5–8. Нажатие на уже существующую ноту удаляет её.</p>
+</div>
+
+<div class="card">
+<h2>6. Сборка мода</h2>
+<p class="small">Добавь аудио для каждой песни. Если чарт уже создан, загрузи его JSON сюда. Если не загрузишь, сайт использует чарт из редактора.</p>
+
+<label>First Meeting — BPM</label>
+<input id="bpm1" type="number" value="112">
+<label>First Meeting — рейтинг</label>
+<input id="rating1" type="number" value="3">
+<label>First Meeting — аудио OGG</label>
+<input id="audio1" type="file" accept=".ogg,audio/ogg">
+<label>First Meeting — готовый Chart JSON (необязательно)</label>
+<input id="chart1" type="file" accept=".json,application/json">
+
+<hr style="border-color:#444">
+
+<label>Experiment — BPM</label>
+<input id="bpm2" type="number" value="145">
+<label>Experiment — рейтинг</label>
+<input id="rating2" type="number" value="5">
+<label>Experiment — аудио OGG</label>
+<input id="audio2" type="file" accept=".ogg,audio/ogg">
+<label>Experiment — готовый Chart JSON (необязательно)</label>
+<input id="chart2" type="file" accept=".json,application/json">
+
+<button onclick="buildMod()">СОБРАТЬ UNIVERSE.ZIP</button>
+<p id="status">Ожидание сборки.</p>
+</div>
+
 </main>
 
 <script>
-const enc = new TextEncoder();
+const $=id=>document.getElementById(id);
+const encoder=new TextEncoder();
 
-function u16(n){
- return [n&255,(n>>>8)&255];
-}
-function u32(n){
- return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+let charts={
+ "first-meeting":[],
+ "experiment":[]
+};
+let audioURL=null;
+let audioDuration=0;
+
+function currentSong(){return $("songSelect").value}
+function currentNotes(){return charts[currentSong()]}
+
+function snapTime(t){
+ const bpm=Math.max(1,Number($("chartBpm").value)||120);
+ const divisions=Number($("grid").value)||4;
+ const step=60000/bpm/divisions;
+ return Math.max(0,Math.round(t/step)*step);
 }
 
-function crc32(bytes){
- let c = -1;
- for(const b of bytes){
-  c ^= b;
-  for(let k=0;k<8;k++)
-   c = (c>>>1) ^ (-(c&1)&0xEDB88320);
+function updateCount(){
+ $("noteCount").value=currentNotes().length;
+}
+
+function drawChart(){
+ const c=$("chartCanvas"),ctx=c.getContext("2d");
+ const w=c.width,h=c.height;
+ ctx.clearRect(0,0,w,h);
+ ctx.fillStyle="#10101b";
+ ctx.fillRect(0,0,w,h);
+
+ const now=$("audio").currentTime*1000;
+ const span=8000;
+ const start=Math.max(0,now-1000);
+ const end=start+span;
+
+ const laneW=w/8;
+ const divisions=Number($("grid").value)||4;
+ const bpm=Math.max(1,Number($("chartBpm").value)||120);
+ const step=60000/bpm/divisions;
+
+ for(let i=0;i<=8;i++){
+  const x=i*laneW;
+  ctx.strokeStyle="#39364d";
+  ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
  }
- return (c^-1)>>>0;
+
+ for(let t=Math.floor(start/step)*step;t<end;t+=step){
+  const y=h-(t-start)/span*h;
+  ctx.strokeStyle=(Math.round(t/step)%divisions===0)?"#65527d":"#282638";
+  ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();
+ }
+
+ for(let i=0;i<8;i++){
+  ctx.fillStyle=i<4?"#b98cff":"#ff829b";
+  ctx.font="bold 13px Arial";
+  ctx.textAlign="center";
+  ctx.fillText(["←","↓","↑","→"][i%4],i*laneW+laneW/2,18);
+ }
+
+ for(const n of currentNotes()){
+  if(n.t<start||n.t>end)continue;
+  const x=n.d*laneW+5;
+  const y=h-(n.t-start)/span*h;
+  const hold=Math.max(0,n.l||0)/span*h;
+  ctx.fillStyle=n.d<4?"#a77aff":"#ff7798";
+  ctx.globalAlpha=.9;
+  ctx.fillRect(x,y-7,laneW-10,Math.max(14,hold));
+  ctx.globalAlpha=1;
+ }
+
+ const playY=h-(now-start)/span*h;
+ ctx.strokeStyle="#ffffff";
+ ctx.lineWidth=2;
+ ctx.beginPath();ctx.moveTo(0,playY);ctx.lineTo(w,playY);ctx.stroke();
+
+ ctx.fillStyle="#fff";
+ ctx.font="12px Arial";
+ ctx.textAlign="left";
+ ctx.fillText((now/1000).toFixed(2)+" sec",5,h-7);
+ updateCount();
 }
 
+$("chartCanvas").addEventListener("click",e=>{
+ const c=$("chartCanvas");
+ const r=c.getBoundingClientRect();
+ const x=(e.clientX-r.left)/r.width*c.width;
+ const y=(e.clientY-r.top)/r.height*c.height;
+ const lane=Math.max(0,Math.min(7,Math.floor(x/(c.width/8))));
+ const now=$("audio").currentTime*1000;
+ const start=Math.max(0,now-1000);
+ const t=snapTime(start+(1-y/c.height)*8000);
+ const notes=currentNotes();
+
+ const found=notes.findIndex(n=>n.d===lane&&Math.abs(n.t-t)<30);
+ if(found>=0)notes.splice(found,1);
+ else notes.push({t:Math.round(t),d:lane,l:Math.max(0,Number($("holdLength").value)||0),k:"",p:[]});
+
+ notes.sort((a,b)=>a.t-b.t);
+ drawChart();
+});
+
+$("audioFile").addEventListener("change",e=>{
+ const file=e.target.files[0];
+ if(!file)return;
+ if(audioURL)URL.revokeObjectURL(audioURL);
+ audioURL=URL.createObjectURL(file);
+ $("audio").src=audioURL;
+ $("audio").load();
+});
+
+$("songSelect").addEventListener("change",()=>{
+ $("chartBpm").value=currentSong()==="first-meeting"?112:145;
+ drawChart();
+});
+
+$("audio").addEventListener("timeupdate",drawChart);
+$("audio").addEventListener("loadedmetadata",()=>{
+ audioDuration=$("audio").duration||0;
+ drawChart();
+});
+
+function seek(seconds){
+ $("audio").currentTime=Math.max(0,Math.min(audioDuration||999999,$("audio").currentTime+seconds));
+ drawChart();
+}
+function clearChart(){
+ if(confirm("Удалить все ноты этой песни?")){
+  charts[currentSong()]=[];
+  drawChart();
+ }
+}
+
+function chartObject(id){
+ return {
+  version:"2.0.0",
+  scrollSpeed:{normal:Number($("scrollSpeed").value)||1},
+  notes:{normal:charts[id]},
+  events:[],
+  generatedBy:"Universe Mod Builder"
+ };
+}
+
+function saveFile(name,data,type){
+ const blob=new Blob([data],{type:type||"application/json"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download=name;a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),20000);
+}
+
+function downloadChart(){
+ const id=currentSong();
+ saveFile(id+"-chart.json",JSON.stringify(chartObject(id),null,2));
+}
+
+function previewIcon(input,preview){
+ $(input).addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  $(preview).src=URL.createObjectURL(f);
+  $(preview).style.display="block";
+ });
+}
+previewIcon("deltaIcon","deltaPreview");
+previewIcon("hackIcon","hackPreview");
+
+function u16(n){return[n&255,(n>>>8)&255]}
+function u32(n){return[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]}
 function join(parts){
  let size=parts.reduce((s,p)=>s+p.length,0);
  let out=new Uint8Array(size),pos=0;
  for(const p of parts){out.set(p,pos);pos+=p.length}
  return out;
 }
-
+function crc32(bytes){
+ let c=-1;
+ for(const b of bytes){
+  c^=b;
+  for(let k=0;k<8;k++)c=(c>>>1)^(-(c&1)&0xEDB88320);
+ }
+ return(c^-1)>>>0;
+}
 function makeZip(files){
  let local=[],central=[],offset=0;
  for(const f of files){
-  const name=enc.encode(f.name);
-  const data=f.data instanceof Uint8Array ? f.data : enc.encode(f.data);
+  const name=encoder.encode(f.name);
+  const data=typeof f.data==="string"?encoder.encode(f.data):f.data;
   const crc=crc32(data);
-
-  const header=new Uint8Array([
+  const h=new Uint8Array([
    ...u32(0x04034b50),...u16(20),...u16(0x800),
    ...u16(0),...u16(0),...u16(0x21),
    ...u32(crc),...u32(data.length),...u32(data.length),
    ...u16(name.length),...u16(0)
   ]);
-
-  local.push(header,name,data);
-
+  local.push(h,name,data);
   const ch=new Uint8Array([
    ...u32(0x02014b50),...u16(20),...u16(20),
    ...u16(0x800),...u16(0),...u16(0),...u16(0x21),
@@ -174,137 +383,74 @@ function makeZip(files){
    ...u16(name.length),...u16(0),...u16(0),
    ...u16(0),...u16(0),...u32(0),...u32(offset)
   ]);
-
   central.push(ch,name);
-  offset += header.length+name.length+data.length;
+  offset+=h.length+name.length+data.length;
  }
-
  const cd=join(central);
  const end=new Uint8Array([
   ...u32(0x06054b50),...u16(0),...u16(0),
   ...u16(files.length),...u16(files.length),
   ...u32(cd.length),...u32(offset),...u16(0)
  ]);
-
  return join([...local,cd,end]);
 }
 
-function val(id){return document.getElementById(id).value.trim()}
-function num(id){return Number(val(id))}
-
-async function readChart(id){
- const file=document.getElementById(id).files[0];
- if(!file){
-  return {
-   version:"2.0.0",
-   scrollSpeed:{normal:1},
-   events:[],
-   notes:{normal:[]},
-   generatedBy:"Universe Mod Builder - empty test chart"
-  };
- }
-
- const obj=JSON.parse(await file.text());
- if(!obj || typeof obj!=="object" ||
-    !obj.notes || typeof obj.notes!=="object" ||
-    !obj.scrollSpeed || typeof obj.scrollSpeed!=="object" ||
-    !Array.isArray(obj.events)){
-  throw new Error("Неподходящий формат Chart JSON: "+file.name);
- }
- if(!Array.isArray(obj.notes.normal)){
-  throw new Error("В Chart JSON отсутствует массив notes.normal: "+file.name);
- }
- return obj;
+async function fileBytes(id){
+ const f=$(id).files[0];
+ return f?new Uint8Array(await f.arrayBuffer()):null;
+}
+async function fileText(id){
+ const f=$(id).files[0];
+ return f?JSON.parse(await f.text()):null;
 }
 
-async function readAudio(id){
- const file=document.getElementById(id).files[0];
- if(!file)return null;
- if(!file.name.toLowerCase().endsWith(".ogg")){
-  throw new Error("Для музыки нужен OGG-файл: "+file.name);
- }
- return new Uint8Array(await file.arrayBuffer());
-}
-
-function makeTitlePng(title,bg){
- const c=document.createElement("canvas");
- c.width=900;c.height=260;
- const x=c.getContext("2d");
- x.fillStyle=bg;x.fillRect(0,0,900,260);
- x.textAlign="center";
- x.textBaseline="middle";
- x.fillStyle="#d7b5ff";
- x.font="bold 76px Arial";
- x.fillText(title.toUpperCase().slice(0,24),450,130);
- return new Promise(resolve=>c.toBlob(async b=>{
-  resolve(new Uint8Array(await b.arrayBuffer()));
- },"image/png"));
-}
-
-async function build(){
- const status=document.getElementById("status");
+async function buildMod(){
+ const status=$("status");
  try{
-  status.textContent="Проверяю данные...";
-
-  const title=val("modTitle");
-  const author=val("author");
-  const api=val("apiVersion");
-  const week=val("weekTitle");
-  const bg=val("background");
-
-  if(!title||!author||!api||!week)throw new Error("Заполни основные поля.");
-  if(!/^[a-zA-Z0-9._-]+$/.test("Universe"))
-   throw new Error("Ошибка имени папки.");
-
-  const songs=[
-   {id:"first-meeting",name:val("name1"),artist:val("artist1"),
-    bpm:num("bpm1"),rating:num("rating1"),chart:"chart1",audio:"audio1"},
-   {id:"experiment",name:val("name2"),artist:val("artist2"),
-    bpm:num("bpm2"),rating:num("rating2"),chart:"chart2",audio:"audio2"}
-  ];
-
-  const player=val("player"),opponent=val("opponent"),gf=val("girlfriend");
-  if(!player||!opponent||!gf)throw new Error("Заполни ID персонажей.");
-
+  status.textContent="Проверяю файлы...";
   const files=[];
-  const add=(name,data)=>files.push({name:"Universe/"+name,data});
+  const add=(path,data)=>files.push({name:"Universe/"+path,data});
 
-  const modMeta={
+  const title=$("modTitle").value.trim();
+  const author=$("author").value.trim();
+  const api=$("apiVersion").value.trim();
+  const week=$("weekTitle").value.trim();
+  if(!title||!author||!api||!week)throw Error("Заполни название, автора, API и недели.");
+
+  add("_polymod_meta.json",JSON.stringify({
    title,
-   description:val("description"),
+   description:$("description").value,
    contributors:[{name:author,role:"Developer"}],
    api_version:api,
-   mod_version:val("modVersion")||"1.0.0",
+   mod_version:$("modVersion").value||"1.0.0",
    license:"Apache-2.0"
-  };
+  },null,2));
 
-  add("_polymod_meta.json",JSON.stringify(modMeta,null,2));
-
-  const weekData={
+  add("data/levels/universe-week.json",JSON.stringify({
    version:"1.0.0",
    name:week,
    titleAsset:"storymenu/titles/universe",
-   background:bg,
-   songs:songs.map(s=>s.id),
+   background:$("background").value,
+   songs:["first-meeting","experiment"],
    visible:true,
    props:[]
-  };
+  },null,2));
 
-  add("data/levels/universe-week.json",JSON.stringify(weekData,null,2));
-
-  const titlePng=await makeTitlePng(week,bg);
-  add("images/storymenu/titles/universe.png",titlePng);
+  const songs=[
+   {id:"first-meeting",name:"First Meeting",bpm:Number($("bpm1").value),rating:Number($("rating1").value),audio:"audio1",chart:"chart1"},
+   {id:"experiment",name:"Experiment",bpm:Number($("bpm2").value),rating:Number($("rating2").value),audio:"audio2",chart:"chart2"}
+  ];
 
   for(const s of songs){
-   if(!s.name||!s.artist||!Number.isFinite(s.bpm)||s.bpm<=0)
-    throw new Error("Проверь название, исполнителя и BPM песни "+s.id);
-   if(!Number.isFinite(s.rating)||s.rating<0||s.rating>10)
-    throw new Error("Рейтинг должен быть от 0 до 10.");
+   let chart=await fileText(s.chart);
+   if(!chart)chart=chartObject(s.id);
+   if(!chart.notes||!chart.notes.normal||!Array.isArray(chart.notes.normal))
+    throw Error("Неподходящий Chart JSON: "+s.id);
 
    const metadata={
     version:"2.2.2",
     songName:s.name,
-    artist:s.artist,
+    artist:$("author").value,
     timeFormat:"ms",
     timeChanges:[{t:0,bpm:s.bpm}],
     playData:{
@@ -314,63 +460,72 @@ async function build(){
      ratings:{normal:s.rating},
      difficulties:["normal"],
      characters:{
-      player:player,
-      girlfriend:gf,
-      opponent:opponent
+      player:$("player").value,
+      girlfriend:$("girlfriend").value,
+      opponent:$("opponent").value
      },
      stage:"mainStage",
      noteStyle:"funkin"
-    },
-    generatedBy:"Universe Mod Builder"
+    }
    };
 
-   const chart=await readChart(s.chart);
-   const audio=await readAudio(s.audio);
+   add("data/songs/"+s.id+"/"+s.id+"-metadata.json",JSON.stringify(metadata,null,2));
+   add("data/songs/"+s.id+"/"+s.id+"-chart.json",JSON.stringify(chart,null,2));
 
-   add("data/songs/"+s.id+"/"+s.id+"-metadata.json",
-       JSON.stringify(metadata,null,2));
-   add("data/songs/"+s.id+"/"+s.id+"-chart.json",
-       JSON.stringify(chart,null,2));
-
+   const audio=await fileBytes(s.audio);
    if(audio)add("songs/"+s.id+"/Inst.ogg",audio);
   }
 
-  const hasAudio=songs.every(s=>document.getElementById(s.audio).files.length);
+  const delta=await fileBytes("deltaIcon");
+  const hack=await fileBytes("hackIcon");
+  if(delta)add("images/icons/delta.png",delta);
+  if(hack)add("images/icons/hack.png",hack);
+
+  const titleCanvas=document.createElement("canvas");
+  titleCanvas.width=900;titleCanvas.height=260;
+  const ctx=titleCanvas.getContext("2d");
+  ctx.fillStyle=$("background").value;
+  ctx.fillRect(0,0,900,260);
+  ctx.fillStyle="#d7b5ff";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.font="bold 76px Arial";
+  ctx.fillText(week.toUpperCase().slice(0,24),450,130);
+  const png=await new Promise(resolve=>titleCanvas.toBlob(resolve,"image/png"));
+  if(png)add("images/storymenu/titles/universe.png",new Uint8Array(await png.arrayBuffer()));
+
   add("README.txt",
 `FRIDAY NIGHT FUNKIN': UNIVERSE
-Generated by Universe Mod Builder
-
-Install:
-Extract the Universe folder into your FNF mods folder.
 
 Songs:
-First Meeting
-Experiment
+- First Meeting
+- Experiment
 
-${hasAudio?"Both OGG audio files are included.":"Audio is incomplete. Add Inst.ogg to each song folder before playing."}
+Charts:
+V-Slice chart JSON exported by Universe Mod Builder.
+Check and test each chart in the FNF Chart Editor.
 
-If empty test charts were generated, create real charts in FNF Chart Editor.
-This package does not contain custom character sprites.
+Audio:
+Add Inst.ogg to each song folder if not included.
+
+Icons:
+Delta and Hack PNG files are included as image resources.
+They are not linked to character definitions yet.
+
+This package does not include custom character sprites.
 `);
 
-  status.textContent="Создаю ZIP...";
+  status.textContent="Создаю архив...";
   const zip=makeZip(files);
-  const blob=new Blob([zip],{type:"application/zip"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;a.download="Universe.zip";
-  document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),30000);
-
-  status.textContent=
-   "Готово! Архив Universe.zip создан.\n"+
-   "Файлов: "+files.length+"\n"+
-   "Музыка: "+(hasAudio?"оба OGG включены":"не вся музыка добавлена")+
-   "\nПустые чарты можно использовать только для проверки меню.";
+  saveFile("Universe.zip",zip,"application/zip");
+  status.textContent="Архив Universe.zip создан!\nФайлов: "+files.length+
+   "\nПроверь, что обе песни содержат Inst.ogg.\nИконки добавлены как ресурсы.";
  }catch(e){
   status.textContent="Ошибка: "+e.message;
  }
 }
+
+drawChart();
 </script>
 </body>
 </html>
