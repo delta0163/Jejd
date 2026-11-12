@@ -4,104 +4,372 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Last Memory - Downloads</title>
+<title>Universe Mod Builder</title>
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(145deg,#09090e,#21131d,#09090e);
-  color: white;
-  font-family: Arial, sans-serif;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-}
-.container {
-  width: 100%;
-  max-width: 430px;
-  background: #15131b;
-  border: 1px solid #49313f;
-  border-radius: 20px;
-  padding: 25px;
-  box-shadow: 0 15px 50px #0008;
-}
-h1 { margin-bottom: 5px; }
-.subtitle { color: #aa9ba9; margin-bottom: 25px; }
-.track {
-  background: #211d27;
-  border-radius: 13px;
-  padding: 18px;
-  margin-bottom: 15px;
-}
-.track h3 { margin: 0 0 8px; }
-.track p { color: #a99daa; font-size: 13px; }
-button {
-  width: 100%;
-  padding: 14px;
-  border: 0;
-  border-radius: 10px;
-  background: #a54c70;
-  color: white;
-  font-size: 15px;
-  font-weight: bold;
-}
-button:active { transform: scale(.98); }
-input {
-  width: 100%;
-  margin: 10px 0;
-  color: white;
-}
-footer {
-  text-align: center;
-  color: #827783;
-  font-size: 12px;
-  margin-top: 20px;
-}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:#10101a;color:#eee;font-family:Arial,sans-serif}
+main{max-width:720px;margin:auto}
+h1{color:#bd91ff;text-align:center}
+h2{color:#bd91ff;font-size:19px}
+p{color:#bcbccc;line-height:1.5}
+.card{background:#1d1d2b;padding:16px;border-radius:14px;margin:15px 0}
+label{display:block;margin:12px 0 6px;color:#ccc}
+input,textarea,select{width:100%;padding:12px;border:1px solid #48445e;border-radius:8px;background:#11111c;color:white}
+input[type=file]{font-size:13px}
+button{width:100%;padding:15px;margin-top:15px;border:0;border-radius:9px;background:#8955ce;color:white;font-weight:bold;font-size:16px}
+button:active{background:#6739a6}
+.small{font-size:12px;color:#999}
+#status{white-space:pre-wrap;color:#b9f3c7}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>LAST MEMORY</h1>
-  <div class="subtitle">Piano compositions / Downloads</div>
+<main>
+<h1>UNIVERSE MOD BUILDER</h1>
+<p style="text-align:center">Сборщик мода для Friday Night Funkin' 0.8.8</p>
 
-  <div class="track">
-    <h3>Последнее воспоминание</h3>
-    <p>Melancholic Piano · D Minor · 85 BPM</p>
-    <button onclick="downloadMidi()">Скачать MIDI</button>
-  </div>
+<div class="card">
+<h2>1. Данные мода</h2>
 
-  <div class="track">
-    <h3>Свой MIDI-файл</h3>
-    <p>Можешь выбрать другой MIDI-файл на телефоне.</p>
-    <input type="file" id="file" accept=".mid,.midi">
-    <button onclick="downloadCustom()">Скачать выбранный файл</button>
-  </div>
+<label>Название мода</label>
+<input id="modTitle" value="Friday Night Funkin': Universe">
 
-  <footer>LAST MEMORY © 2026</footer>
+<label>Описание</label>
+<textarea id="description">A new story featuring Delta and Hack.</textarea>
+
+<label>Автор</label>
+<input id="author" value="Universe Team">
+
+<label>Версия мода</label>
+<input id="modVersion" value="1.0.0">
+
+<label>API version игры</label>
+<input id="apiVersion" value="0.8.8">
+<p class="small">Если игра не загрузит мод, значение API version потребуется сверить с требованиями твоей сборки.</p>
 </div>
 
+<div class="card">
+<h2>2. Неделя</h2>
+
+<label>Название недели</label>
+<input id="weekTitle" value="UNIVERSE">
+
+<label>Цвет фона меню</label>
+<input id="background" type="color" value="#171727">
+
+<p class="small">Картинка заголовка недели будет создана автоматически.</p>
+</div>
+
+<div class="card">
+<h2>3. First Meeting</h2>
+
+<label>Название песни</label>
+<input id="name1" value="First Meeting">
+
+<label>Исполнитель</label>
+<input id="artist1" value="Universe Team">
+
+<label>BPM</label>
+<input id="bpm1" type="number" value="112" min="1">
+
+<label>Рейтинг сложности (0–10)</label>
+<input id="rating1" type="number" value="3" min="0" max="10">
+
+<label>Chart JSON (необязательно)</label>
+<input id="chart1" type="file" accept=".json,application/json">
+
+<label>Музыка Inst.ogg (необязательно для проверки меню)</label>
+<input id="audio1" type="file" accept=".ogg,audio/ogg">
+</div>
+
+<div class="card">
+<h2>4. Experiment</h2>
+
+<label>Название песни</label>
+<input id="name2" value="Experiment">
+
+<label>Исполнитель</label>
+<input id="artist2" value="Universe Team">
+
+<label>BPM</label>
+<input id="bpm2" type="number" value="145" min="1">
+
+<label>Рейтинг сложности (0–10)</label>
+<input id="rating2" type="number" value="5" min="0" max="10">
+
+<label>Chart JSON (необязательно)</label>
+<input id="chart2" type="file" accept=".json,application/json">
+
+<label>Музыка Inst.ogg (необязательно для проверки меню)</label>
+<input id="audio2" type="file" accept=".ogg,audio/ogg">
+</div>
+
+<div class="card">
+<h2>5. Персонажи</h2>
+<p>Пока используем стандартных персонажей, потому что собственные спрайты Дельты и Хака ещё не добавлены.</p>
+
+<label>Игрок</label>
+<input id="player" value="bf">
+
+<label>Соперник</label>
+<input id="opponent" value="dad">
+
+<label>Girlfriend</label>
+<input id="girlfriend" value="gf">
+</div>
+
+<button onclick="build()">СОБРАТЬ МОД ZIP</button>
+<div class="card">
+<h2>Результат</h2>
+<p id="status">Заполни поля и нажми кнопку.</p>
+</div>
+</main>
+
 <script>
-function downloadMidi() {
-  const a = document.createElement("a");
-  a.href = "poslednee_vospominanie_piano.mid";
-  a.download = "poslednee_vospominanie_piano.mid";
-  a.click();
+const enc = new TextEncoder();
+
+function u16(n){
+ return [n&255,(n>>>8)&255];
+}
+function u32(n){
+ return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
 }
 
-function downloadCustom() {
-  const file = document.getElementById("file").files[0];
-  if (!file) {
-    alert("Сначала выбери MIDI-файл!");
-    return;
+function crc32(bytes){
+ let c = -1;
+ for(const b of bytes){
+  c ^= b;
+  for(let k=0;k<8;k++)
+   c = (c>>>1) ^ (-(c&1)&0xEDB88320);
+ }
+ return (c^-1)>>>0;
+}
+
+function join(parts){
+ let size=parts.reduce((s,p)=>s+p.length,0);
+ let out=new Uint8Array(size),pos=0;
+ for(const p of parts){out.set(p,pos);pos+=p.length}
+ return out;
+}
+
+function makeZip(files){
+ let local=[],central=[],offset=0;
+ for(const f of files){
+  const name=enc.encode(f.name);
+  const data=f.data instanceof Uint8Array ? f.data : enc.encode(f.data);
+  const crc=crc32(data);
+
+  const header=new Uint8Array([
+   ...u32(0x04034b50),...u16(20),...u16(0x800),
+   ...u16(0),...u16(0),...u16(0x21),
+   ...u32(crc),...u32(data.length),...u32(data.length),
+   ...u16(name.length),...u16(0)
+  ]);
+
+  local.push(header,name,data);
+
+  const ch=new Uint8Array([
+   ...u32(0x02014b50),...u16(20),...u16(20),
+   ...u16(0x800),...u16(0),...u16(0),...u16(0x21),
+   ...u32(crc),...u32(data.length),...u32(data.length),
+   ...u16(name.length),...u16(0),...u16(0),
+   ...u16(0),...u16(0),...u32(0),...u32(offset)
+  ]);
+
+  central.push(ch,name);
+  offset += header.length+name.length+data.length;
+ }
+
+ const cd=join(central);
+ const end=new Uint8Array([
+  ...u32(0x06054b50),...u16(0),...u16(0),
+  ...u16(files.length),...u16(files.length),
+  ...u32(cd.length),...u32(offset),...u16(0)
+ ]);
+
+ return join([...local,cd,end]);
+}
+
+function val(id){return document.getElementById(id).value.trim()}
+function num(id){return Number(val(id))}
+
+async function readChart(id){
+ const file=document.getElementById(id).files[0];
+ if(!file){
+  return {
+   version:"2.0.0",
+   scrollSpeed:{normal:1},
+   events:[],
+   notes:{normal:[]},
+   generatedBy:"Universe Mod Builder - empty test chart"
+  };
+ }
+
+ const obj=JSON.parse(await file.text());
+ if(!obj || typeof obj!=="object" ||
+    !obj.notes || typeof obj.notes!=="object" ||
+    !obj.scrollSpeed || typeof obj.scrollSpeed!=="object" ||
+    !Array.isArray(obj.events)){
+  throw new Error("Неподходящий формат Chart JSON: "+file.name);
+ }
+ if(!Array.isArray(obj.notes.normal)){
+  throw new Error("В Chart JSON отсутствует массив notes.normal: "+file.name);
+ }
+ return obj;
+}
+
+async function readAudio(id){
+ const file=document.getElementById(id).files[0];
+ if(!file)return null;
+ if(!file.name.toLowerCase().endsWith(".ogg")){
+  throw new Error("Для музыки нужен OGG-файл: "+file.name);
+ }
+ return new Uint8Array(await file.arrayBuffer());
+}
+
+function makeTitlePng(title,bg){
+ const c=document.createElement("canvas");
+ c.width=900;c.height=260;
+ const x=c.getContext("2d");
+ x.fillStyle=bg;x.fillRect(0,0,900,260);
+ x.textAlign="center";
+ x.textBaseline="middle";
+ x.fillStyle="#d7b5ff";
+ x.font="bold 76px Arial";
+ x.fillText(title.toUpperCase().slice(0,24),450,130);
+ return new Promise(resolve=>c.toBlob(async b=>{
+  resolve(new Uint8Array(await b.arrayBuffer()));
+ },"image/png"));
+}
+
+async function build(){
+ const status=document.getElementById("status");
+ try{
+  status.textContent="Проверяю данные...";
+
+  const title=val("modTitle");
+  const author=val("author");
+  const api=val("apiVersion");
+  const week=val("weekTitle");
+  const bg=val("background");
+
+  if(!title||!author||!api||!week)throw new Error("Заполни основные поля.");
+  if(!/^[a-zA-Z0-9._-]+$/.test("Universe"))
+   throw new Error("Ошибка имени папки.");
+
+  const songs=[
+   {id:"first-meeting",name:val("name1"),artist:val("artist1"),
+    bpm:num("bpm1"),rating:num("rating1"),chart:"chart1",audio:"audio1"},
+   {id:"experiment",name:val("name2"),artist:val("artist2"),
+    bpm:num("bpm2"),rating:num("rating2"),chart:"chart2",audio:"audio2"}
+  ];
+
+  const player=val("player"),opponent=val("opponent"),gf=val("girlfriend");
+  if(!player||!opponent||!gf)throw new Error("Заполни ID персонажей.");
+
+  const files=[];
+  const add=(name,data)=>files.push({name:"Universe/"+name,data});
+
+  const modMeta={
+   title,
+   description:val("description"),
+   contributors:[{name:author,role:"Developer"}],
+   api_version:api,
+   mod_version:val("modVersion")||"1.0.0",
+   license:"Apache-2.0"
+  };
+
+  add("_polymod_meta.json",JSON.stringify(modMeta,null,2));
+
+  const weekData={
+   version:"1.0.0",
+   name:week,
+   titleAsset:"storymenu/titles/universe",
+   background:bg,
+   songs:songs.map(s=>s.id),
+   visible:true,
+   props:[]
+  };
+
+  add("data/levels/universe-week.json",JSON.stringify(weekData,null,2));
+
+  const titlePng=await makeTitlePng(week,bg);
+  add("images/storymenu/titles/universe.png",titlePng);
+
+  for(const s of songs){
+   if(!s.name||!s.artist||!Number.isFinite(s.bpm)||s.bpm<=0)
+    throw new Error("Проверь название, исполнителя и BPM песни "+s.id);
+   if(!Number.isFinite(s.rating)||s.rating<0||s.rating>10)
+    throw new Error("Рейтинг должен быть от 0 до 10.");
+
+   const metadata={
+    version:"2.2.2",
+    songName:s.name,
+    artist:s.artist,
+    timeFormat:"ms",
+    timeChanges:[{t:0,bpm:s.bpm}],
+    playData:{
+     album:"universe",
+     previewStart:0,
+     previewEnd:15000,
+     ratings:{normal:s.rating},
+     difficulties:["normal"],
+     characters:{
+      player:player,
+      girlfriend:gf,
+      opponent:opponent
+     },
+     stage:"mainStage",
+     noteStyle:"funkin"
+    },
+    generatedBy:"Universe Mod Builder"
+   };
+
+   const chart=await readChart(s.chart);
+   const audio=await readAudio(s.audio);
+
+   add("data/songs/"+s.id+"/"+s.id+"-metadata.json",
+       JSON.stringify(metadata,null,2));
+   add("data/songs/"+s.id+"/"+s.id+"-chart.json",
+       JSON.stringify(chart,null,2));
+
+   if(audio)add("songs/"+s.id+"/Inst.ogg",audio);
   }
 
-  const url = URL.createObjectURL(file);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = file.name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const hasAudio=songs.every(s=>document.getElementById(s.audio).files.length);
+  add("README.txt",
+`FRIDAY NIGHT FUNKIN': UNIVERSE
+Generated by Universe Mod Builder
+
+Install:
+Extract the Universe folder into your FNF mods folder.
+
+Songs:
+First Meeting
+Experiment
+
+${hasAudio?"Both OGG audio files are included.":"Audio is incomplete. Add Inst.ogg to each song folder before playing."}
+
+If empty test charts were generated, create real charts in FNF Chart Editor.
+This package does not contain custom character sprites.
+`);
+
+  status.textContent="Создаю ZIP...";
+  const zip=makeZip(files);
+  const blob=new Blob([zip],{type:"application/zip"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="Universe.zip";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+
+  status.textContent=
+   "Готово! Архив Universe.zip создан.\n"+
+   "Файлов: "+files.length+"\n"+
+   "Музыка: "+(hasAudio?"оба OGG включены":"не вся музыка добавлена")+
+   "\nПустые чарты можно использовать только для проверки меню.";
+ }catch(e){
+  status.textContent="Ошибка: "+e.message;
+ }
 }
 </script>
 </body>
