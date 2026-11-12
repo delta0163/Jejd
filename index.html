@@ -4,140 +4,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Universe Chart Generator</title>
+<title>Last Memory - Downloads</title>
 <style>
-body{background:#111522;color:white;font-family:Arial;padding:18px}
-main{max-width:600px;margin:auto}
-.card{background:#20283a;border-radius:14px;padding:16px;margin:14px 0}
-button{width:100%;padding:14px;margin-top:10px;background:#a52d43;color:white;border:0;border-radius:9px;font-weight:bold;font-size:16px}
-small{color:#bbc2d4}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(145deg,#09090e,#21131d,#09090e);
+  color: white;
+  font-family: Arial, sans-serif;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.container {
+  width: 100%;
+  max-width: 430px;
+  background: #15131b;
+  border: 1px solid #49313f;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 15px 50px #0008;
+}
+h1 { margin-bottom: 5px; }
+.subtitle { color: #aa9ba9; margin-bottom: 25px; }
+.track {
+  background: #211d27;
+  border-radius: 13px;
+  padding: 18px;
+  margin-bottom: 15px;
+}
+.track h3 { margin: 0 0 8px; }
+.track p { color: #a99daa; font-size: 13px; }
+button {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #a54c70;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+}
+button:active { transform: scale(.98); }
+input {
+  width: 100%;
+  margin: 10px 0;
+  color: white;
+}
+footer {
+  text-align: center;
+  color: #827783;
+  font-size: 12px;
+  margin-top: 20px;
+}
 </style>
 </head>
 <body>
-<main>
-<h2>UNIVERSE — CHART GENERATOR</h2>
-<p>FNF 0.8.8 · V-Slice · Normal</p>
+<div class="container">
+  <h1>LAST MEMORY</h1>
+  <div class="subtitle">Piano compositions / Downloads</div>
 
-<div class="card">
-<h3>First Meeting</h3>
-<p>112 BPM · 48 тактов · дружеский баттл</p>
-<button onclick="download('first-meeting')">Скачать First Meeting Chart</button>
-</div>
+  <div class="track">
+    <h3>Последнее воспоминание</h3>
+    <p>Melancholic Piano · D Minor · 85 BPM</p>
+    <button onclick="downloadMidi()">Скачать MIDI</button>
+  </div>
 
-<div class="card">
-<h3>Experiment</h3>
-<p>145 BPM · 64 такта · нарастающая сложность</p>
-<button onclick="download('experiment')">Скачать Experiment Chart</button>
-</div>
+  <div class="track">
+    <h3>Свой MIDI-файл</h3>
+    <p>Можешь выбрать другой MIDI-файл на телефоне.</p>
+    <input type="file" id="file" accept=".mid,.midi">
+    <button onclick="downloadCustom()">Скачать выбранный файл</button>
+  </div>
 
-<div class="card">
-<b>Важно</b>
-<p><small>Это стартовые чарты, а не точная расстановка нот по аудио. После проверки их нужно будет синхронизировать с песнями.</small></p>
+  <footer>LAST MEMORY © 2026</footer>
 </div>
-</main>
 
 <script>
-function makeChart(id){
- const isExp=id==="experiment";
- const bpm=isExp?145:112;
- const bars=isExp?64:48;
- const beat=60000/bpm;
- const notes=[];
- const lanes=[0,1,2,3];
- const player=[4,5,6,7];
-
- function add(time,lane,length=0){
-  const n={t:Math.round(time),d:lane};
-  if(length>0)n.l=Math.round(length);
-  notes.push(n);
- }
-
- for(let bar=0;bar<bars;bar++){
-  const start=bar*beat*4;
-  let density=1;
-
-  if(isExp){
-   if(bar<8)density=1;
-   else if(bar<20)density=2;
-   else if(bar<36)density=3;
-   else if(bar<52)density=4;
-   else density=2;
-  }else{
-   if(bar<8)density=1;
-   else if(bar<32)density=2;
-   else density=3;
-  }
-
-  // Чередование партий Хака и Дельты
-  const opponentTurn=Math.floor(bar/2)%2===0;
-  const first=opponentTurn?lanes:player;
-  const second=opponentTurn?player:lanes;
-
-  // Основная фраза
-  for(let i=0;i<4*density;i++){
-   const step=beat/density;
-   const time=start+i*step;
-   const lane=first[(i+bar)%4];
-   add(time,lane);
-  }
-
-  // Ответ второго персонажа
-  if(bar%2===1 || density>=3){
-   for(let i=0;i<Math.min(4*density,12);i++){
-    const step=beat/density;
-    const time=start+i*step+step/2;
-    if(time<(bar+1)*beat*4){
-     const lane=second[(i+bar+1)%4];
-     add(time,lane);
-    }
-   }
-  }
-
-  // Дополнительные ноты в напряжённых частях Experiment
-  if(isExp&&bar>=20&&bar<52){
-   for(let i=0;i<4;i++){
-    const time=start+i*beat+beat/2;
-    add(time,player[(i+bar)%4]);
-   }
-  }
-
-  // Длинные ноты в концовках музыкальных фраз
-  if(isExp&&bar>=36&&bar<52&&bar%4===3){
-   add(start+beat*2,player[bar%4],beat*1.5);
-  }
-
-  if(!isExp&&bar%8===7){
-   add(start+beat*2,player[bar%4],beat);
-  }
- }
-
- notes.sort((a,b)=>a.t-b.t);
-
- return {
-  version:"2.0.0",
-  scrollSpeed:{
-   normal:2.5
-  },
-  events:[],
-  notes:{
-   normal:notes
-  },
-  generatedBy:"Universe Chart Generator"
- };
+function downloadMidi() {
+  const a = document.createElement("a");
+  a.href = "poslednee_vospominanie_piano.mid";
+  a.download = "poslednee_vospominanie_piano.mid";
+  a.click();
 }
 
-function download(id){
- const data=makeChart(id);
- const blob=new Blob(
-  [JSON.stringify(data,null,2)],
-  {type:"application/json"}
- );
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;
- a.download=id+"-chart.json";
- a.click();
- setTimeout(()=>URL.revokeObjectURL(url),1500);
+function downloadCustom() {
+  const file = document.getElementById("file").files[0];
+  if (!file) {
+    alert("Сначала выбери MIDI-файл!");
+    return;
+  }
+
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = file.name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 </script>
 </body>
