@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,526 +5,114 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Universe Mod Builder</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;padding:15px;background:#10101a;color:#eee;font-family:Arial}
-main{max-width:850px;margin:auto}
-h1{text-align:center;color:#c49aff}
-h2{color:#c49aff;font-size:19px}
-.card{background:#1d1d2c;padding:15px;border-radius:13px;margin:14px 0}
-label{display:block;margin:12px 0 6px;color:#ccc}
-input,select,textarea{width:100%;padding:11px;background:#11111c;color:white;border:1px solid #49445e;border-radius:8px}
-input[type=file]{font-size:13px}
-button{padding:12px;border:0;border-radius:8px;background:#8955ce;color:white;font-weight:bold;margin:5px 0;cursor:pointer}
-button:active{background:#6336a5}
-button.secondary{background:#45445b}
-button.danger{background:#963c56}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-.row>*{flex:1;min-width:100px}
-.small{font-size:12px;color:#aaa;line-height:1.5}
-canvas{width:100%;background:#10101b;border-radius:8px;touch-action:manipulation}
-#chartCanvas{height:390px}
-#status{white-space:pre-wrap;color:#b8f2c4}
-.note{color:#c7a7ff}
-audio{width:100%;margin-top:10px}
+*{box-sizing:border-box}body{margin:0;padding:14px;background:#10101a;color:#eee;font-family:Arial}main{max-width:900px;margin:auto}h1{text-align:center;color:#c49aff}h2{color:#c49aff;font-size:19px}.card{background:#1d1d2c;padding:15px;border-radius:13px;margin:14px 0}label{display:block;margin:11px 0 6px;color:#ccc}input,select,textarea{width:100%;padding:11px;background:#11111c;color:white;border:1px solid #49445e;border-radius:8px}input[type=file]{font-size:13px}input[type=range]{padding:4px}button{padding:12px;border:0;border-radius:8px;background:#8955ce;color:white;font-weight:bold;margin:5px 3px 5px 0;cursor:pointer}button:active{background:#6336a5}button.secondary{background:#45445b}button.danger{background:#963c56}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:110px}.small{font-size:12px;color:#aaa;line-height:1.5}canvas{display:block;width:100%;background:#10101b;border-radius:8px;touch-action:none}#chartCanvas{height:440px}#status{white-space:pre-wrap;color:#b8f2c4}audio{width:100%;margin-top:8px}.note{color:#c7a7ff}.pill{display:inline-block;background:#302941;padding:5px 9px;border-radius:20px;font-size:12px;color:#d8c2ff;margin:2px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.muted{color:#aaa}.selectedInfo{color:#e0ccff;font-size:13px;margin-top:8px}@media(max-width:520px){body{padding:8px}.card{padding:12px}.grid2{grid-template-columns:1fr}#chartCanvas{height:400px}}
 </style>
 </head>
-<body>
-<main>
-
-<h1>UNIVERSE MOD BUILDER</h1>
-<p style="text-align:center;color:#aaa">Friday Night Funkin' 0.8.8 • Mod Creator</p>
+<body><main>
+<h1>UNIVERSE MOD BUILDER</h1><p style="text-align:center;color:#aaa">Friday Night Funkin' 0.8.8 • Mod Creator</p>
 
 <div class="card">
-<h2>1. Информация о моде</h2>
-<label>Название</label>
-<input id="modTitle" value="Friday Night Funkin': Universe">
-<label>Описание</label>
-<textarea id="description">A new story featuring Delta and Hack.</textarea>
-<label>Автор</label>
-<input id="author" value="Universe Team">
-<label>Версия мода</label>
-<input id="modVersion" value="1.0.0">
-<label>API version</label>
-<input id="apiVersion" value="0.8.0">
+<h2>0. Проекты и сохранение</h2>
+<label>Название проекта</label><input id="projectName" value="Universe Week 1">
+<div class="row"><button id="saveNow">СОХРАНИТЬ СЕЙЧАС</button><button class="secondary" id="newProject">НОВЫЙ ПРОЕКТ</button><button class="danger" id="deleteProject">УДАЛИТЬ ПРОЕКТ</button></div>
+<label>Открыть сохранённый проект</label><select id="projectSelect"><option value="">Загрузка списка...</option></select>
+<p class="small" id="saveStatus">Автосохранение включено. Проекты хранятся в памяти браузера на этом устройстве.</p>
 </div>
 
-<div class="card">
-<h2>2. Неделя</h2>
-<label>Название недели</label>
-<input id="weekTitle" value="UNIVERSE">
-<label>Цвет фона</label>
-<input id="background" type="color" value="#171727">
+<div class="card"><h2>1. Информация о моде</h2>
+<label>Название</label><input id="modTitle" value="Friday Night Funkin': Universe">
+<label>Описание</label><textarea id="description">A new story featuring Delta and Hack.</textarea>
+<label>Автор</label><input id="author" value="Universe Team">
+<label>Версия мода</label><input id="modVersion" value="1.0.0">
+<label>API version</label><input id="apiVersion" value="0.8.0">
 </div>
 
-<div class="card">
-<h2>3. Песни и персонажи</h2>
-<label>Игрок</label>
-<input id="player" value="bf">
-<label>Соперник</label>
-<input id="opponent" value="dad">
-<label>Girlfriend</label>
-<input id="girlfriend" value="gf">
-<p class="small">Пока используем стандартные персонажи. Для собственных Дельты и Хака позднее добавим спрайты и character JSON.</p>
+<div class="card"><h2>2. Неделя</h2><label>Название недели</label><input id="weekTitle" value="UNIVERSE"><label>Цвет фона</label><input id="background" type="color" value="#171727"></div>
+
+<div class="card"><h2>3. Песни и персонажи</h2>
+<label>Игрок</label><input id="player" value="bf"><label>Соперник</label><input id="opponent" value="dad"><label>Girlfriend</label><input id="girlfriend" value="gf">
+<p class="small">Пока используются стандартные персонажи. Для собственных Дельты и Хака позднее добавим спрайты и character JSON.</p></div>
+
+<div class="card"><h2>4. Иконки персонажей</h2><p class="small">Загрузи PNG-иконки. Они сохраняются в проекте и попадут в архив мода.</p>
+<label>Иконка Дельты</label><input type="file" id="deltaIcon" accept="image/png"><img id="deltaPreview" style="display:none;max-width:100px;max-height:100px;margin-top:10px">
+<label>Иконка Хака</label><input type="file" id="hackIcon" accept="image/png"><img id="hackPreview" style="display:none;max-width:100px;max-height:100px;margin-top:10px">
+<p class="small">Иконки пока добавляются как ресурсы, но ещё не связаны с character JSON.</p></div>
+
+<div class="card"><h2>5. Редактор чартов</h2><p class="small">Нажми на пустое место сетки — нота добавится и сразу прозвучит. Нажми на существующую ноту — выберешь её и услышишь звук. Выбранную ноту можно перетаскивать пальцем или мышью.</p>
+<label>Выбрать песню</label><select id="songSelect"><option value="first-meeting">First Meeting</option><option value="experiment">Experiment</option></select>
+<label>Музыка (Inst) для прослушивания</label><input type="file" id="audioFile" accept="audio/*"><audio id="audio" controls></audio>
+<div class="row"><div><label>BPM</label><input id="chartBpm" type="number" value="112" min="1"></div><div><label>Шаг сетки</label><select id="grid"><option value="4">1/4</option><option value="8">1/8</option><option value="16">1/16</option></select></div><div><label>Масштаб времени</label><select id="zoom"><option value="4000">4 секунды</option><option value="8000" selected>8 секунд</option><option value="16000">16 секунд</option></select></div></div>
+<div class="row"><div><label>Длина новой ноты (мс)</label><input id="holdLength" type="number" value="0" min="0" step="50"></div><div><label>Скорость нот</label><input id="scrollSpeed" type="number" value="1" min="0.1" step="0.1"></div></div>
+<canvas id="chartCanvas" width="960" height="440"></canvas>
+<div class="row"><button class="secondary" id="back2">◀ -2 сек</button><button class="secondary" id="forward2">+2 сек ▶</button><button class="secondary" id="playPause">▶ / ❚❚</button><button class="danger" id="deleteNote">УДАЛИТЬ ВЫБРАННУЮ НОТУ</button></div>
+<div class="grid2"><div><label>Выбранная нота — удержание (мс)</label><input id="selectedHold" type="number" min="0" step="50" value="0"></div><div><label>Количество нот</label><input id="noteCount" readonly value="0"></div></div>
+<p class="selectedInfo" id="selectedInfo">Нота не выбрана.</p>
+<div class="card" style="background:#171725;margin:12px 0 0"><h2>Звуки голосов и высота стрелок</h2><p class="small">Загрузи короткий голосовой звук/семпл для каждого персонажа. При нажатии на ноту редактор проиграет соответствующий голосовой семпл, изменив высоту по направлению стрелки. Если семпл не загружен, прозвучит тестовый синтезированный тон.</p>
+<label>Голос Дельты (аудиофайл)</label><input type="file" id="deltaVoice" accept="audio/*">
+<label>Голос Хака (аудиофайл)</label><input type="file" id="hackVoice" accept="audio/*">
+<div class="row"><button class="secondary" id="testDelta">ПРОВЕРИТЬ ГОЛОС ДЕЛЬТЫ</button><button class="secondary" id="testHack">ПРОВЕРИТЬ ГОЛОС ХАКА</button></div>
+<p class="small">Настрой высоту каждой стрелки в полутонах. Значение 0 — без изменения; +12 — на октаву выше; -12 — на октаву ниже.</p>
+<div class="grid2"><div><label>← Влево (полутоны)</label><input id="pitch0" type="number" value="-5" min="-24" max="24"></div><div><label>↓ Вниз (полутоны)</label><input id="pitch1" type="number" value="-2" min="-24" max="24"></div><div><label>↑ Вверх (полутоны)</label><input id="pitch2" type="number" value="2" min="-24" max="24"></div><div><label>→ Вправо (полутоны)</label><input id="pitch3" type="number" value="5" min="-24" max="24"></div></div>
+<label>Громкость предпрослушивания</label><input id="voiceVolume" type="range" min="0" max="1" step="0.05" value="0.8">
+</div>
+<button id="downloadChart">СКАЧАТЬ CHART JSON</button>
+<p class="small">Дорожки 1–4 — игрок (Дельта), дорожки 5–8 — соперник (Хак). Перетаскивай ноты для изменения времени и направления. Удаление — кнопкой после выбора ноты.</p>
 </div>
 
-<div class="card">
-<h2>4. Иконки персонажей</h2>
-<p class="small">Загрузи PNG-изображения иконок. Они попадут в архив мода.</p>
-
-<label>Иконка Дельты</label>
-<input type="file" id="deltaIcon" accept="image/png">
-<img id="deltaPreview" style="display:none;max-width:100px;max-height:100px;margin-top:10px">
-
-<label>Иконка Хака</label>
-<input type="file" id="hackIcon" accept="image/png">
-<img id="hackPreview" style="display:none;max-width:100px;max-height:100px;margin-top:10px">
-
-<p class="small">Пока это будут файлы ресурсов. Чтобы они появились во время боя, их нужно будет связать с персонажами в их настройках.</p>
-</div>
-
-<div class="card">
-<h2>5. Редактор чартов</h2>
-<p class="small">Выбери песню, загрузи аудио, включи воспроизведение и нажимай на дорожки, чтобы расставлять ноты.</p>
-
-<label>Выбрать песню</label>
-<select id="songSelect">
-<option value="first-meeting">First Meeting</option>
-<option value="experiment">Experiment</option>
-</select>
-
-<label>Аудиофайл</label>
-<input type="file" id="audioFile" accept="audio/*">
-<audio id="audio" controls></audio>
-
-<div class="row">
-<div>
-<label>BPM</label>
-<input id="chartBpm" type="number" value="112" min="1">
-</div>
-<div>
-<label>Делений на долю</label>
-<select id="grid">
-<option value="4">1/4</option>
-<option value="8">1/8</option>
-<option value="16">1/16</option>
-</select>
-</div>
-</div>
-
-<div class="row">
-<div>
-<label>Длина удержания (мс)</label>
-<input id="holdLength" type="number" value="0" min="0">
-</div>
-<div>
-<label>Скорость нот</label>
-<input id="scrollSpeed" type="number" value="1" min="0.1" step="0.1">
-</div>
-</div>
-
-<p class="small">Сетка показывает примерно 8 секунд музыки. Текущее время аудио находится внизу шкалы.</p>
-<canvas id="chartCanvas" width="800" height="390"></canvas>
-
-<div class="row">
-<button class="secondary" onclick="seek(-2)">◀ -2 сек</button>
-<button class="secondary" onclick="seek(2)">+2 сек ▶</button>
-<button class="secondary" onclick="clearChart()">Очистить чарт</button>
-</div>
-
-<div class="row">
-<div>
-<label>Сложность</label>
-<select id="difficulty">
-<option value="normal">Normal</option>
-</select>
-</div>
-<div>
-<label>Количество нот</label>
-<input id="noteCount" readonly value="0">
-</div>
-</div>
-
-<button onclick="downloadChart()">СКАЧАТЬ CHART JSON</button>
-<p class="small">Игрок: дорожки 1–4. Соперник: дорожки 5–8. Нажатие на уже существующую ноту удаляет её.</p>
-</div>
-
-<div class="card">
-<h2>6. Сборка мода</h2>
-<p class="small">Добавь аудио для каждой песни. Если чарт уже создан, загрузи его JSON сюда. Если не загрузишь, сайт использует чарт из редактора.</p>
-
-<label>First Meeting — BPM</label>
-<input id="bpm1" type="number" value="112">
-<label>First Meeting — рейтинг</label>
-<input id="rating1" type="number" value="3">
-<label>First Meeting — аудио OGG</label>
-<input id="audio1" type="file" accept=".ogg,audio/ogg">
-<label>First Meeting — готовый Chart JSON (необязательно)</label>
-<input id="chart1" type="file" accept=".json,application/json">
-
-<hr style="border-color:#444">
-
-<label>Experiment — BPM</label>
-<input id="bpm2" type="number" value="145">
-<label>Experiment — рейтинг</label>
-<input id="rating2" type="number" value="5">
-<label>Experiment — аудио OGG</label>
-<input id="audio2" type="file" accept=".ogg,audio/ogg">
-<label>Experiment — готовый Chart JSON (необязательно)</label>
-<input id="chart2" type="file" accept=".json,application/json">
-
-<button onclick="buildMod()">СОБРАТЬ UNIVERSE.ZIP</button>
-<p id="status">Ожидание сборки.</p>
-</div>
-
+<div class="card"><h2>6. Сборка мода</h2><p class="small">Для каждой песни можно добавить OGG музыки. Голоса Дельты и Хака, загруженные выше, будут включены в обе песни как Voices-дорожки.</p>
+<label>First Meeting — BPM</label><input id="bpm1" type="number" value="112"><label>First Meeting — рейтинг</label><input id="rating1" type="number" value="3"><label>First Meeting — аудио OGG</label><input id="audio1" type="file" accept=".ogg,audio/ogg"><label>First Meeting — готовый Chart JSON (необязательно)</label><input id="chart1" type="file" accept=".json,application/json">
+<hr style="border-color:#444"><label>Experiment — BPM</label><input id="bpm2" type="number" value="145"><label>Experiment — рейтинг</label><input id="rating2" type="number" value="5"><label>Experiment — аудио OGG</label><input id="audio2" type="file" accept=".ogg,audio/ogg"><label>Experiment — готовый Chart JSON (необязательно)</label><input id="chart2" type="file" accept=".json,application/json">
+<button id="buildButton">СОБРАТЬ UNIVERSE.ZIP</button><p id="status">Ожидание сборки.</p></div>
 </main>
-
 <script>
-const $=id=>document.getElementById(id);
-const encoder=new TextEncoder();
-
-let charts={
- "first-meeting":[],
- "experiment":[]
-};
-let audioURL=null;
-let audioDuration=0;
-
-function currentSong(){return $("songSelect").value}
-function currentNotes(){return charts[currentSong()]}
-
-function snapTime(t){
- const bpm=Math.max(1,Number($("chartBpm").value)||120);
- const divisions=Number($("grid").value)||4;
- const step=60000/bpm/divisions;
- return Math.max(0,Math.round(t/step)*step);
-}
-
-function updateCount(){
- $("noteCount").value=currentNotes().length;
-}
-
-function drawChart(){
- const c=$("chartCanvas"),ctx=c.getContext("2d");
- const w=c.width,h=c.height;
- ctx.clearRect(0,0,w,h);
- ctx.fillStyle="#10101b";
- ctx.fillRect(0,0,w,h);
-
- const now=$("audio").currentTime*1000;
- const span=8000;
- const start=Math.max(0,now-1000);
- const end=start+span;
-
- const laneW=w/8;
- const divisions=Number($("grid").value)||4;
- const bpm=Math.max(1,Number($("chartBpm").value)||120);
- const step=60000/bpm/divisions;
-
- for(let i=0;i<=8;i++){
-  const x=i*laneW;
-  ctx.strokeStyle="#39364d";
-  ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
- }
-
- for(let t=Math.floor(start/step)*step;t<end;t+=step){
-  const y=h-(t-start)/span*h;
-  ctx.strokeStyle=(Math.round(t/step)%divisions===0)?"#65527d":"#282638";
-  ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();
- }
-
- for(let i=0;i<8;i++){
-  ctx.fillStyle=i<4?"#b98cff":"#ff829b";
-  ctx.font="bold 13px Arial";
-  ctx.textAlign="center";
-  ctx.fillText(["←","↓","↑","→"][i%4],i*laneW+laneW/2,18);
- }
-
- for(const n of currentNotes()){
-  if(n.t<start||n.t>end)continue;
-  const x=n.d*laneW+5;
-  const y=h-(n.t-start)/span*h;
-  const hold=Math.max(0,n.l||0)/span*h;
-  ctx.fillStyle=n.d<4?"#a77aff":"#ff7798";
-  ctx.globalAlpha=.9;
-  ctx.fillRect(x,y-7,laneW-10,Math.max(14,hold));
-  ctx.globalAlpha=1;
- }
-
- const playY=h-(now-start)/span*h;
- ctx.strokeStyle="#ffffff";
- ctx.lineWidth=2;
- ctx.beginPath();ctx.moveTo(0,playY);ctx.lineTo(w,playY);ctx.stroke();
-
- ctx.fillStyle="#fff";
- ctx.font="12px Arial";
- ctx.textAlign="left";
- ctx.fillText((now/1000).toFixed(2)+" sec",5,h-7);
- updateCount();
-}
-
-$("chartCanvas").addEventListener("click",e=>{
- const c=$("chartCanvas");
- const r=c.getBoundingClientRect();
- const x=(e.clientX-r.left)/r.width*c.width;
- const y=(e.clientY-r.top)/r.height*c.height;
- const lane=Math.max(0,Math.min(7,Math.floor(x/(c.width/8))));
- const now=$("audio").currentTime*1000;
- const start=Math.max(0,now-1000);
- const t=snapTime(start+(1-y/c.height)*8000);
- const notes=currentNotes();
-
- const found=notes.findIndex(n=>n.d===lane&&Math.abs(n.t-t)<30);
- if(found>=0)notes.splice(found,1);
- else notes.push({t:Math.round(t),d:lane,l:Math.max(0,Number($("holdLength").value)||0),k:"",p:[]});
-
- notes.sort((a,b)=>a.t-b.t);
- drawChart();
-});
-
-$("audioFile").addEventListener("change",e=>{
- const file=e.target.files[0];
- if(!file)return;
- if(audioURL)URL.revokeObjectURL(audioURL);
- audioURL=URL.createObjectURL(file);
- $("audio").src=audioURL;
- $("audio").load();
-});
-
-$("songSelect").addEventListener("change",()=>{
- $("chartBpm").value=currentSong()==="first-meeting"?112:145;
- drawChart();
-});
-
-$("audio").addEventListener("timeupdate",drawChart);
-$("audio").addEventListener("loadedmetadata",()=>{
- audioDuration=$("audio").duration||0;
- drawChart();
-});
-
-function seek(seconds){
- $("audio").currentTime=Math.max(0,Math.min(audioDuration||999999,$("audio").currentTime+seconds));
- drawChart();
-}
-function clearChart(){
- if(confirm("Удалить все ноты этой песни?")){
-  charts[currentSong()]=[];
-  drawChart();
- }
-}
-
-function chartObject(id){
- return {
-  version:"2.0.0",
-  scrollSpeed:{normal:Number($("scrollSpeed").value)||1},
-  notes:{normal:charts[id]},
-  events:[],
-  generatedBy:"Universe Mod Builder"
- };
-}
-
-function saveFile(name,data,type){
- const blob=new Blob([data],{type:type||"application/json"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;a.download=name;a.click();
- setTimeout(()=>URL.revokeObjectURL(url),20000);
-}
-
-function downloadChart(){
- const id=currentSong();
- saveFile(id+"-chart.json",JSON.stringify(chartObject(id),null,2));
-}
-
-function previewIcon(input,preview){
- $(input).addEventListener("change",e=>{
-  const f=e.target.files[0];if(!f)return;
-  $(preview).src=URL.createObjectURL(f);
-  $(preview).style.display="block";
- });
-}
-previewIcon("deltaIcon","deltaPreview");
-previewIcon("hackIcon","hackPreview");
-
-function u16(n){return[n&255,(n>>>8)&255]}
-function u32(n){return[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]}
-function join(parts){
- let size=parts.reduce((s,p)=>s+p.length,0);
- let out=new Uint8Array(size),pos=0;
- for(const p of parts){out.set(p,pos);pos+=p.length}
- return out;
-}
-function crc32(bytes){
- let c=-1;
- for(const b of bytes){
-  c^=b;
-  for(let k=0;k<8;k++)c=(c>>>1)^(-(c&1)&0xEDB88320);
- }
- return(c^-1)>>>0;
-}
-function makeZip(files){
- let local=[],central=[],offset=0;
- for(const f of files){
-  const name=encoder.encode(f.name);
-  const data=typeof f.data==="string"?encoder.encode(f.data):f.data;
-  const crc=crc32(data);
-  const h=new Uint8Array([
-   ...u32(0x04034b50),...u16(20),...u16(0x800),
-   ...u16(0),...u16(0),...u16(0x21),
-   ...u32(crc),...u32(data.length),...u32(data.length),
-   ...u16(name.length),...u16(0)
-  ]);
-  local.push(h,name,data);
-  const ch=new Uint8Array([
-   ...u32(0x02014b50),...u16(20),...u16(20),
-   ...u16(0x800),...u16(0),...u16(0),...u16(0x21),
-   ...u32(crc),...u32(data.length),...u32(data.length),
-   ...u16(name.length),...u16(0),...u16(0),
-   ...u16(0),...u16(0),...u32(0),...u32(offset)
-  ]);
-  central.push(ch,name);
-  offset+=h.length+name.length+data.length;
- }
- const cd=join(central);
- const end=new Uint8Array([
-  ...u32(0x06054b50),...u16(0),...u16(0),
-  ...u16(files.length),...u16(files.length),
-  ...u32(cd.length),...u32(offset),...u16(0)
- ]);
- return join([...local,cd,end]);
-}
-
-async function fileBytes(id){
- const f=$(id).files[0];
- return f?new Uint8Array(await f.arrayBuffer()):null;
-}
-async function fileText(id){
- const f=$(id).files[0];
- return f?JSON.parse(await f.text()):null;
-}
-
-async function buildMod(){
- const status=$("status");
- try{
-  status.textContent="Проверяю файлы...";
-  const files=[];
-  const add=(path,data)=>files.push({name:"Universe/"+path,data});
-
-  const title=$("modTitle").value.trim();
-  const author=$("author").value.trim();
-  const api=$("apiVersion").value.trim();
-  const week=$("weekTitle").value.trim();
-  if(!title||!author||!api||!week)throw Error("Заполни название, автора, API и недели.");
-
-  add("_polymod_meta.json",JSON.stringify({
-   title,
-   description:$("description").value,
-   contributors:[{name:author,role:"Developer"}],
-   api_version:api,
-   mod_version:$("modVersion").value||"1.0.0",
-   license:"Apache-2.0"
-  },null,2));
-
-  add("data/levels/universe-week.json",JSON.stringify({
-   version:"1.0.0",
-   name:week,
-   titleAsset:"storymenu/titles/universe",
-   background:$("background").value,
-   songs:["first-meeting","experiment"],
-   visible:true,
-   props:[]
-  },null,2));
-
-  const songs=[
-   {id:"first-meeting",name:"First Meeting",bpm:Number($("bpm1").value),rating:Number($("rating1").value),audio:"audio1",chart:"chart1"},
-   {id:"experiment",name:"Experiment",bpm:Number($("bpm2").value),rating:Number($("rating2").value),audio:"audio2",chart:"chart2"}
-  ];
-
-  for(const s of songs){
-   let chart=await fileText(s.chart);
-   if(!chart)chart=chartObject(s.id);
-   if(!chart.notes||!chart.notes.normal||!Array.isArray(chart.notes.normal))
-    throw Error("Неподходящий Chart JSON: "+s.id);
-
-   const metadata={
-    version:"2.2.2",
-    songName:s.name,
-    artist:$("author").value,
-    timeFormat:"ms",
-    timeChanges:[{t:0,bpm:s.bpm}],
-    playData:{
-     album:"universe",
-     previewStart:0,
-     previewEnd:15000,
-     ratings:{normal:s.rating},
-     difficulties:["normal"],
-     characters:{
-      player:$("player").value,
-      girlfriend:$("girlfriend").value,
-      opponent:$("opponent").value
-     },
-     stage:"mainStage",
-     noteStyle:"funkin"
-    }
-   };
-
-   add("data/songs/"+s.id+"/"+s.id+"-metadata.json",JSON.stringify(metadata,null,2));
-   add("data/songs/"+s.id+"/"+s.id+"-chart.json",JSON.stringify(chart,null,2));
-
-   const audio=await fileBytes(s.audio);
-   if(audio)add("songs/"+s.id+"/Inst.ogg",audio);
-  }
-
-  const delta=await fileBytes("deltaIcon");
-  const hack=await fileBytes("hackIcon");
-  if(delta)add("images/icons/delta.png",delta);
-  if(hack)add("images/icons/hack.png",hack);
-
-  const titleCanvas=document.createElement("canvas");
-  titleCanvas.width=900;titleCanvas.height=260;
-  const ctx=titleCanvas.getContext("2d");
-  ctx.fillStyle=$("background").value;
-  ctx.fillRect(0,0,900,260);
-  ctx.fillStyle="#d7b5ff";
-  ctx.textAlign="center";
-  ctx.textBaseline="middle";
-  ctx.font="bold 76px Arial";
-  ctx.fillText(week.toUpperCase().slice(0,24),450,130);
-  const png=await new Promise(resolve=>titleCanvas.toBlob(resolve,"image/png"));
-  if(png)add("images/storymenu/titles/universe.png",new Uint8Array(await png.arrayBuffer()));
-
-  add("README.txt",
-`FRIDAY NIGHT FUNKIN': UNIVERSE
-
-Songs:
-- First Meeting
-- Experiment
-
-Charts:
-V-Slice chart JSON exported by Universe Mod Builder.
-Check and test each chart in the FNF Chart Editor.
-
-Audio:
-Add Inst.ogg to each song folder if not included.
-
-Icons:
-Delta and Hack PNG files are included as image resources.
-They are not linked to character definitions yet.
-
-This package does not include custom character sprites.
-`);
-
-  status.textContent="Создаю архив...";
-  const zip=makeZip(files);
-  saveFile("Universe.zip",zip,"application/zip");
-  status.textContent="Архив Universe.zip создан!\nФайлов: "+files.length+
-   "\nПроверь, что обе песни содержат Inst.ogg.\nИконки добавлены как ресурсы.";
- }catch(e){
-  status.textContent="Ошибка: "+e.message;
- }
-}
-
-drawChart();
-</script>
-</body>
-</html>
+const $=id=>document.getElementById(id), enc=new TextEncoder();
+const DB_NAME='universe_builder_db_v2', STORE='projects';
+let db, projectId='default', charts={'first-meeting':[],'experiment':[]}, assets={}, audioURL=null, audioCtx=null, voiceBuffers={delta:null,hack:null}, selectedNote=null, dragState=null, saveTimer=null, currentStart=0;
+const fieldIds=['projectName','modTitle','description','author','modVersion','apiVersion','weekTitle','background','player','opponent','girlfriend','songSelect','chartBpm','grid','zoom','holdLength','scrollSpeed','selectedHold','bpm1','rating1','bpm2','rating2','pitch0','pitch1','pitch2','pitch3','voiceVolume'];
+function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(STORE))req.result.createObjectStore(STORE,{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+function dbGetAll(){return new Promise((res,rej)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+function dbPut(value){return new Promise((res,rej)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(value);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function dbDelete(id){return new Promise((res,rej)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function collectState(){const fields={};for(const id of fieldIds)fields[id]=$(id).value;return{fields,charts}}
+function setStatus(msg){$('saveStatus').textContent=msg}
+function scheduleSave(){clearTimeout(saveTimer);setStatus('Есть изменения… сохраняю автоматически');saveTimer=setTimeout(saveProject,450)}
+async function saveProject(){try{if(!db)return;const rec={id:projectId,name:$('projectName').value.trim()||'Без названия',updatedAt:Date.now(),state:collectState(),assets};await dbPut(rec);await refreshProjectList();setStatus('Сохранено в этом браузере • '+new Date().toLocaleTimeString())}catch(e){setStatus('Не удалось сохранить: '+e.message)}}
+async function refreshProjectList(){const all=(await dbGetAll()).sort((a,b)=>b.updatedAt-a.updatedAt);const sel=$('projectSelect');sel.innerHTML='';for(const p of all){const o=document.createElement('option');o.value=p.id;o.textContent=p.name+' — '+new Date(p.updatedAt).toLocaleString();sel.appendChild(o)}if(!all.length){const o=document.createElement('option');o.value='';o.textContent='Нет сохранённых проектов';sel.appendChild(o)}sel.value=projectId}
+function applyState(rec){projectId=rec.id;assets=rec.assets||{};charts=rec.state?.charts||{'first-meeting':[],'experiment':[]};for(const [id,val] of Object.entries(rec.state?.fields||{})){if($(id))$(id).value=val}if(!charts['first-meeting'])charts['first-meeting']=[];if(!charts.experiment)charts.experiment=[];selectedNote=null;restorePreviews();drawChart();}
+async function loadProject(id){if(!id)return;const all=await dbGetAll(),rec=all.find(x=>x.id===id);if(!rec)return;applyState(rec);await refreshProjectList();setStatus('Открыт проект: '+rec.name)}
+async function createProject(){await saveProject();projectId='project-'+Date.now()+'-'+Math.floor(Math.random()*10000);charts={'first-meeting':[],'experiment':[]};assets={};for(const id of fieldIds){if(['projectName'].includes(id))$(id).value='Новый проект';} $('projectName').value='Новый проект';$('audioFile').value='';$('deltaVoice').value='';$('hackVoice').value='';$('deltaIcon').value='';$('hackIcon').value='';$('audio').removeAttribute('src');$('audio').load();voiceBuffers={delta:null,hack:null};selectedNote=null;drawChart();await saveProject()}
+async function deleteCurrentProject(){if(!confirm('Удалить этот проект и все сохранённые в нём аудиофайлы?'))return;await dbDelete(projectId);projectId='project-'+Date.now();charts={'first-meeting':[],'experiment':[]};assets={};$('projectName').value='Новый проект';drawChart();await saveProject()}
+function currentSong(){return $('songSelect').value}function currentNotes(){return charts[currentSong()]}
+function snapTime(t){const bpm=Math.max(1,Number($('chartBpm').value)||120),div=Number($('grid').value)||4,step=60000/bpm/div;return Math.max(0,Math.round(t/step)*step)}
+function lanePitch(lane){return Number($('pitch'+(lane%4)).value)||0}
+function ensureAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+async function decodeVoice(which,blob){if(!blob){voiceBuffers[which]=null;return}try{const ctx=ensureAudio(),buf=await blob.arrayBuffer();voiceBuffers[which]=await ctx.decodeAudioData(buf.slice(0));}catch(e){voiceBuffers[which]=null;setStatus('Файл голоса сохранён, но браузер не смог его декодировать для предпрослушивания. Попробуй WAV, MP3 или OGG.')}}
+function playVoice(lane){const who=lane<4?'delta':'hack',buf=voiceBuffers[who],ctx=ensureAudio(),semi=lanePitch(lane),rate=Math.pow(2,semi/12),vol=Math.max(0,Math.min(1,Number($('voiceVolume').value)||0));if(buf){const src=ctx.createBufferSource(),gain=ctx.createGain();src.buffer=buf;src.playbackRate.value=rate;gain.gain.value=vol;src.connect(gain);gain.connect(ctx.destination);src.start();}else{const osc=ctx.createOscillator(),gain=ctx.createGain();const base=[220,246.94,277.18,329.63][lane%4];osc.type='triangle';osc.frequency.value=base*rate;gain.gain.setValueAtTime(vol*.22,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.22);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.23)}}
+function drawChart(){const c=$('chartCanvas'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.fillStyle='#10101b';ctx.fillRect(0,0,w,h);const now=($('audio').currentTime||0)*1000,span=Number($('zoom').value)||8000;currentStart=Math.max(0,now-span*.5);const start=currentStart,end=start+span,laneW=w/8,bpm=Math.max(1,Number($('chartBpm').value)||120),div=Number($('grid').value)||4,step=60000/bpm/div;
+for(let i=0;i<=8;i++){ctx.strokeStyle='#39364d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(i*laneW,0);ctx.lineTo(i*laneW,h);ctx.stroke()}
+for(let t=Math.floor(start/step)*step;t<end;t+=step){const y=h-(t-start)/span*h;ctx.strokeStyle=(Math.round(t/step)%div===0)?'#65527d':'#282638';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+for(let i=0;i<8;i++){ctx.fillStyle=i<4?'#b98cff':'#ff829b';ctx.font='bold 16px Arial';ctx.textAlign='center';ctx.fillText(['←','↓','↑','→'][i%4],i*laneW+laneW/2,22);ctx.font='10px Arial';ctx.fillText(i<4?'DELTA':'HACK',i*laneW+laneW/2,38)}
+const notes=currentNotes();for(const n of notes){if(n.t<start-100||n.t>end+100)continue;const x=n.d*laneW+5,y=h-(n.t-start)/span*h,hold=Math.max(0,n.l||0)/span*h;ctx.fillStyle=n.d<4?'#a77aff':'#ff7798';ctx.globalAlpha=.9;ctx.fillRect(x,y-7,laneW-10,Math.max(14,hold));ctx.globalAlpha=1;if(n===selectedNote){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.strokeRect(x-2,y-9,laneW-6,Math.max(18,hold+4))}}
+const py=h-(now-start)/span*h;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(w,py);ctx.stroke();ctx.fillStyle='#fff';ctx.font='12px Arial';ctx.textAlign='left';ctx.fillText((now/1000).toFixed(2)+' sec',5,h-7);$('noteCount').value=notes.length;if(selectedNote){$('selectedHold').value=selectedNote.l||0;$('selectedInfo').textContent='Выбрана: '+['←','↓','↑','→'][selectedNote.d%4]+' • '+(selectedNote.d<4?'Дельта':'Хак')+' • '+(selectedNote.t/1000).toFixed(3)+' сек • тон '+lanePitch(selectedNote.d)+' полутонов'}else $('selectedInfo').textContent='Нота не выбрана.'}
+function pointToGrid(e){const c=$('chartCanvas'),r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*c.width,y=(e.clientY-r.top)/r.height*c.height,lane=Math.max(0,Math.min(7,Math.floor(x/(c.width/8)))),span=Number($('zoom').value)||8000,t=snapTime(currentStart+(1-y/c.height)*span);return{lane,t}}
+function findNote(lane,t){const span=Number($('zoom').value)||8000,tolerance=Math.max(65,span/440*10);return currentNotes().find(n=>n.d===lane&&Math.abs(n.t-t)<tolerance)}
+const canvas=$('chartCanvas');canvas.addEventListener('pointerdown',e=>{e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=pointToGrid(e),found=findNote(p.lane,p.t);if(found){selectedNote=found;dragState={note:found,moved:false,startX:e.clientX,startY:e.clientY};playVoice(found.d)}else{const n={t:p.t,d:p.lane,l:Math.max(0,Number($('holdLength').value)||0),k:'',p:[]};currentNotes().push(n);currentNotes().sort((a,b)=>a.t-b.t);selectedNote=n;playVoice(n.d);scheduleSave()}drawChart()});canvas.addEventListener('pointermove',e=>{if(!dragState)return;const dx=Math.abs(e.clientX-dragState.startX),dy=Math.abs(e.clientY-dragState.startY);if(dx+dy<5)return;dragState.moved=true;const p=pointToGrid(e),n=dragState.note;n.d=p.lane;n.t=p.t;currentNotes().sort((a,b)=>a.t-b.t);selectedNote=n;drawChart()});canvas.addEventListener('pointerup',()=>{if(dragState?.moved)scheduleSave();dragState=null});canvas.addEventListener('pointercancel',()=>{if(dragState?.moved)scheduleSave();dragState=null});
+$('selectedHold').addEventListener('change',()=>{if(selectedNote){selectedNote.l=Math.max(0,Number($('selectedHold').value)||0);drawChart();scheduleSave()}});$('deleteNote').onclick=()=>{if(!selectedNote)return;const a=currentNotes(),i=a.indexOf(selectedNote);if(i>=0)a.splice(i,1);selectedNote=null;drawChart();scheduleSave()};$('back2').onclick=()=>seek(-2);$('forward2').onclick=()=>seek(2);$('playPause').onclick=()=>{$('audio').paused?$('audio').play():$('audio').pause()};
+function seek(s){const a=$('audio');a.currentTime=Math.max(0,Math.min(Number.isFinite(a.duration)?a.duration:1e9,a.currentTime+s));drawChart()}
+$('audioFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;assets.audioFile=f;setEditorAudio(f);scheduleSave()});function setEditorAudio(blob){if(audioURL)URL.revokeObjectURL(audioURL);audioURL=URL.createObjectURL(blob);$('audio').src=audioURL;$('audio').load()}
+$('audio').addEventListener('timeupdate',drawChart);$('audio').addEventListener('loadedmetadata',drawChart);$('songSelect').addEventListener('change',()=>{$('chartBpm').value=currentSong()==='first-meeting'?112:145;selectedNote=null;drawChart();scheduleSave()});$('clearChart')?.addEventListener('click',()=>{});
+$('deltaVoice').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;assets.deltaVoice=f;await decodeVoice('delta',f);setStatus('Голос Дельты загружен');scheduleSave()});$('hackVoice').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;assets.hackVoice=f;await decodeVoice('hack',f);setStatus('Голос Хака загружен');scheduleSave()});$('testDelta').onclick=()=>playVoice(0);$('testHack').onclick=()=>playVoice(4);
+function restorePreviews(){for(const [id,pid] of [['deltaIcon','deltaPreview'],['hackIcon','hackPreview']]){if(assets[id]){$(pid).src=URL.createObjectURL(assets[id]);$(pid).style.display='block'}}if(assets.audioFile)setEditorAudio(assets.audioFile);decodeVoice('delta',assets.deltaVoice);decodeVoice('hack',assets.hackVoice)}
+for(const id of ['deltaIcon','hackIcon','audio1','audio2','chart1','chart2'])$(id).addEventListener('change',e=>{if(e.target.files[0]){assets[id]=e.target.files[0];if(id==='deltaIcon'||id==='hackIcon'){const p=id==='deltaIcon'?'deltaPreview':'hackPreview';$(p).src=URL.createObjectURL(e.target.files[0]);$(p).style.display='block'}scheduleSave()}});
+for(const id of fieldIds){$(id).addEventListener('input',()=>{if(id.startsWith('pitch'))drawChart();scheduleSave()});$(id).addEventListener('change',()=>{drawChart();scheduleSave()})}
+function chartObject(id){return{version:'2.0.0',scrollSpeed:{normal:Number($('scrollSpeed').value)||1},notes:{normal:charts[id]},events:[],generatedBy:'Universe Mod Builder'}}
+function saveFile(name,data,type='application/json'){const blob=new Blob([data],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),20000)}$('downloadChart').onclick=()=>saveFile(currentSong()+'-chart.json',JSON.stringify(chartObject(currentSong()),null,2));
+function u16(n){return[n&255,(n>>>8)&255]}function u32(n){return[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]}function join(parts){let size=parts.reduce((s,p)=>s+p.length,0),out=new Uint8Array(size),pos=0;for(const p of parts){out.set(p,pos);pos+=p.length}return out}function crc32(bytes){let c=-1;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^(-(c&1)&0xEDB88320)}return(c^-1)>>>0}
+function makeZip(files){let local=[],central=[],offset=0;for(const f of files){const name=enc.encode(f.name),data=typeof f.data==='string'?enc.encode(f.data):f.data,crc=crc32(data),h=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0x800),...u16(0),...u16(0),...u16(0x21),...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0)]);local.push(h,name,data);const ch=new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0x800),...u16(0),...u16(0),...u16(0x21),...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(offset)]);central.push(ch,name);offset+=h.length+name.length+data.length}const cd=join(central),end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cd.length),...u32(offset),...u16(0)]);return join([...local,cd,end])}
+async function blobBytes(blob){return blob?new Uint8Array(await blob.arrayBuffer()):null}async function readJsonBlob(blob){return blob?JSON.parse(await blob.text()):null}
+async function buildMod(){const status=$('status');try{status.textContent='Проверяю файлы…';const files=[],add=(path,data)=>files.push({name:'Universe/'+path,data});const title=$('modTitle').value.trim(),author=$('author').value.trim(),api=$('apiVersion').value.trim(),week=$('weekTitle').value.trim();if(!title||!author||!api||!week)throw Error('Заполни название, автора, API и недели.');add('_polymod_meta.json',JSON.stringify({title,description:$('description').value,contributors:[{name:author,role:'Developer'}],api_version:api,mod_version:$('modVersion').value||'1.0.0',license:'Apache-2.0'},null,2));add('data/levels/universe-week.json',JSON.stringify({version:'1.0.0',name:week,titleAsset:'storymenu/titles/universe',background:$('background').value,songs:['first-meeting','experiment'],visible:true,props:[]},null,2));
+const songs=[{id:'first-meeting',name:'First Meeting',bpm:Number($('bpm1').value),rating:Number($('rating1').value),audio:'audio1',chart:'chart1'},{id:'experiment',name:'Experiment',bpm:Number($('bpm2').value),rating:Number($('rating2').value),audio:'audio2',chart:'chart2'}];for(const s of songs){let chart=await readJsonBlob(assets[s.chart]);if(!chart)chart=chartObject(s.id);if(!chart.notes||!Array.isArray(chart.notes.normal))throw Error('Неподходящий Chart JSON: '+s.id);const metadata={version:'2.2.2',songName:s.name,artist:author,timeFormat:'ms',timeChanges:[{t:0,bpm:s.bpm}],playData:{album:'universe',previewStart:0,previewEnd:15000,ratings:{normal:s.rating},difficulties:['normal'],characters:{player:$('player').value,girlfriend:$('girlfriend').value,opponent:$('opponent').value},stage:'mainStage',noteStyle:'funkin'}};add('data/songs/'+s.id+'/'+s.id+'-metadata.json',JSON.stringify(metadata,null,2));add('data/songs/'+s.id+'/'+s.id+'-chart.json',JSON.stringify(chart,null,2));const inst=await blobBytes(assets[s.audio]);if(inst)add('songs/'+s.id+'/Inst.ogg',inst);}
+const di=await blobBytes(assets.deltaIcon),hi=await blobBytes(assets.hackIcon);if(di)add('images/icons/delta.png',di);if(hi)add('images/icons/hack.png',hi);const tc=document.createElement('canvas');tc.width=900;tc.height=260;const cx=tc.getContext('2d');cx.fillStyle=$('background').value;cx.fillRect(0,0,900,260);cx.fillStyle='#d7b5ff';cx.textAlign='center';cx.textBaseline='middle';cx.font='bold 76px Arial';cx.fillText(week.toUpperCase().slice(0,24),450,130);const png=await new Promise(r=>tc.toBlob(r,'image/png'));if(png)add('images/storymenu/titles/universe.png',new Uint8Array(await png.arrayBuffer()));add('README.txt',"FRIDAY NIGHT FUNKIN': UNIVERSE\n\nSongs: First Meeting, Experiment\nCharts: V-Slice chart JSON; test in FNF Chart Editor.\nAudio: Inst.ogg files are included when provided.\nVoice samples: saved in this browser for chart-note preview only; they are not full song vocal tracks.\nIcons: PNG resources included; character JSON linkage is not yet configured.\nCustom character sprites are not included.\n");status.textContent='Создаю архив…';saveFile('Universe.zip',makeZip(files),'application/zip');status.textContent='Архив Universe.zip собран. Файлов: '+files.length+'. Проверь наличие Inst.ogg для обеих песен и протестируй чарт в игре.'}catch(e){status.textContent='Ошибка: '+e.message}}
+$('buildButton').onclick=buildMod;$('saveNow').onclick=saveProject;$('newProject').onclick=createProject;$('deleteProject').onclick=deleteCurrentProject;$('projectSelect').onchange=e=>loadProject(e.target.value);
+(async function init(){try{db=await openDB();const all=await dbGetAll();if(all.length){const last=all.sort((a,b)=>b.updatedAt-a.updatedAt)[0];applyState(last)}else{projectId='default';await saveProject()}await refreshProjectList();setStatus('Автосохранение активно. Проект хранится в IndexedDB этого браузера.')}catch(e){setStatus('Ошибка хранилища браузера: '+e.message+'. Разреши сайту хранить данные.')}drawChart()})();
+</script></body></html>
